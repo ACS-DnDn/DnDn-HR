@@ -2,12 +2,13 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@/hooks/useTheme';
 import { AnimatedLogo } from '@/components/AnimatedLogo';
-import { apiFetch } from '@/services/api';
+import { useAuth } from '@/contexts/AuthContext';
 import './LoginPage.css';
 
 export function LoginPage() {
   const navigate = useNavigate();
   const { isDark, toggle } = useTheme();
+  const { login, challenge } = useAuth();
 
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -30,34 +31,16 @@ export function LoginPage() {
     setError('');
     setIsLoading(true);
     try {
-      const data = await apiFetch<{
-        success: boolean;
-        data?: { challenge?: string; session?: string; accessToken?: string; idToken?: string; refreshToken?: string; username?: string; email?: string };
-        error?: { message: string };
-      }>('/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ email, password: pw }),
-      });
-
-      if (!data.success) { setError(data.error?.message || '이메일 또는 비밀번호가 올바르지 않습니다.'); return; }
-
-      if (data.data?.challenge === 'NEW_PASSWORD_REQUIRED') {
-        setChallengeEmail(email);
-        setChallengeSession(data.data.session ?? '');
+      const result = await login(email, pw);
+      if (result.type === 'challenge') {
+        setChallengeEmail(result.email);
+        setChallengeSession(result.session);
         setChallengeMode(true);
-        return;
-      }
-
-      if (data.data?.accessToken) {
-        localStorage.setItem('access_token', data.data.accessToken);
-        localStorage.setItem('id_token', data.data.idToken ?? '');
-        localStorage.setItem('refresh_token', data.data.refreshToken ?? '');
-        localStorage.setItem('username', data.data.username ?? '');
-        localStorage.setItem('email', data.data.email ?? email);
+      } else {
         navigate('/users');
       }
-    } catch {
-      setError('이메일 또는 비밀번호가 올바르지 않습니다.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '이메일 또는 비밀번호가 올바르지 않습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -71,27 +54,10 @@ export function LoginPage() {
     setError('');
     setIsLoading(true);
     try {
-      const data = await apiFetch<{
-        success: boolean;
-        data?: { accessToken?: string; idToken?: string; refreshToken?: string; username?: string; email?: string };
-        error?: { message: string };
-      }>('/auth/challenge', {
-        method: 'POST',
-        body: JSON.stringify({ email: challengeEmail, session: challengeSession, newPassword: newPw }),
-      });
-
-      if (!data.success) { setError(data.error?.message || '비밀번호 변경에 실패했습니다. 다시 시도해 주세요.'); return; }
-
-      if (data.data?.accessToken) {
-        localStorage.setItem('access_token', data.data.accessToken);
-        localStorage.setItem('id_token', data.data.idToken ?? '');
-        localStorage.setItem('refresh_token', data.data.refreshToken ?? '');
-        localStorage.setItem('username', data.data.username ?? '');
-        localStorage.setItem('email', data.data.email ?? challengeEmail);
-        navigate('/users');
-      }
-    } catch {
-      setError('비밀번호 변경에 실패했습니다. 다시 시도해 주세요.');
+      await challenge(challengeEmail, newPw, challengeSession);
+      navigate('/users');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '비밀번호 변경에 실패했습니다. 다시 시도해 주세요.');
     } finally {
       setIsLoading(false);
     }

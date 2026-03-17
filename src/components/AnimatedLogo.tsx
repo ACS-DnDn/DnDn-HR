@@ -7,7 +7,12 @@ interface AnimatedLogoProps {
 
 const CHARS = ['D', 'n', 'D', 'n'] as const;
 const CHAR_X = [0, 43.609375, 87.21875, 130.828125];
-const CURSOR_X = [0, 43.609375, 87.21875, 130.828125, 194.4375];
+const CURSOR_X = [0, 43.609375, 87.21875, 130.828125, 194.4375, 215, 236];
+
+const H_X = 194.4375;
+const R_X = 215;
+const HR_Y = 38;
+
 const TYPE_GAP = 100;
 const HOLD_MS = 30000;
 const WAIT_MS = 1000;
@@ -16,11 +21,14 @@ const BLINK_MS = 500;
 export function AnimatedLogo({ variant, className }: AnimatedLogoProps) {
   const bgRefs = useRef<(SVGTextElement | null)[]>([]);
   const fgRefs = useRef<(SVGTextElement | null)[]>([]);
+  const hRef = useRef<SVGTextElement | null>(null);
+  const rRef = useRef<SVGTextElement | null>(null);
   const cursorRef = useRef<SVGRectElement>(null);
 
   const bgColor = variant === 'dark' ? '#0d1117' : '#ffffff';
   const accentColor = variant === 'dark' ? '#4ADEAA' : '#228BE6';
   const nColor = variant === 'dark' ? '#ffffff' : '#0d1117';
+  const hrColor = variant === 'dark' ? '#ffffff' : '#0d1117';
 
   useEffect(() => {
     let cancelled = false;
@@ -34,6 +42,9 @@ export function AnimatedLogo({ variant, className }: AnimatedLogoProps) {
       bgRefs.current[idx]?.setAttribute('opacity', v);
       fgRefs.current[idx]?.setAttribute('opacity', v);
     };
+    const showH = (visible: boolean) => hRef.current?.setAttribute('opacity', visible ? '1' : '0');
+    const showR = (visible: boolean) => rRef.current?.setAttribute('opacity', visible ? '1' : '0');
+
     const startBlink = () => {
       let state = true;
       showCursor();
@@ -50,21 +61,35 @@ export function AnimatedLogo({ variant, className }: AnimatedLogoProps) {
     const run = async () => {
       while (!cancelled) {
         for (let i = 0; i < 4; i++) showChar(i, false);
+        showH(false); showR(false);
         setCursorX(0); showCursor();
         await sleep(300); if (cancelled) break;
+
         stopBlink();
         for (let i = 0; i < 4; i++) {
           showChar(i, true); setCursorX(i + 1);
           await sleep(TYPE_GAP); if (cancelled) break;
         }
         if (cancelled) break;
+
+        showH(true); setCursorX(5);
+        await sleep(TYPE_GAP); if (cancelled) break;
+        showR(true); setCursorX(6);
+        await sleep(TYPE_GAP); if (cancelled) break;
+
         startBlink(); await sleep(HOLD_MS); if (cancelled) break;
         stopBlink();
+
+        showR(false); setCursorX(5);
+        await sleep(TYPE_GAP); if (cancelled) break;
+        showH(false); setCursorX(4);
+        await sleep(TYPE_GAP); if (cancelled) break;
         for (let i = 3; i >= 0; i--) {
           showChar(i, false); setCursorX(i);
           await sleep(TYPE_GAP); if (cancelled) break;
         }
         if (cancelled) break;
+
         startBlink(); await sleep(WAIT_MS); if (cancelled) break;
         stopBlink();
       }
@@ -77,14 +102,52 @@ export function AnimatedLogo({ variant, className }: AnimatedLogoProps) {
   const fgColors = CHARS.map((c) => (c === 'D' ? accentColor : nColor));
 
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 0 221.4375 100" className={className} style={{ backgroundColor: 'transparent' }}>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="-6 0 280 100"
+      className={className}
+      style={{ backgroundColor: 'transparent' }}
+    >
       {CHARS.map((char, i) => (
         <g key={i}>
-          <text ref={(el) => { bgRefs.current[i] = el; }} y="88" fontFamily="'Courier New',monospace" fontSize="86" fontWeight="700" fill={bgColor} stroke={bgColor} strokeWidth="10" strokeLinejoin="round" x={CHAR_X[i]} opacity="0">{char}</text>
-          <text ref={(el) => { fgRefs.current[i] = el; }} y="88" fontFamily="'Courier New',monospace" fontSize="86" fontWeight="700" fill={fgColors[i]} stroke={fgColors[i]} strokeWidth="3" x={CHAR_X[i]} opacity="0">{char}</text>
+          <text
+            ref={(el) => { bgRefs.current[i] = el; }}
+            y="88" fontFamily="'Courier New',monospace" fontSize="86" fontWeight="700"
+            fill={bgColor} stroke={bgColor} strokeWidth="10" strokeLinejoin="round"
+            x={CHAR_X[i]} opacity="0"
+          >{char}</text>
+          <text
+            ref={(el) => { fgRefs.current[i] = el; }}
+            y="88" fontFamily="'Courier New',monospace" fontSize="86" fontWeight="700"
+            fill={fgColors[i]} stroke={fgColors[i]} strokeWidth="3"
+            x={CHAR_X[i]} opacity="0"
+          >{char}</text>
         </g>
       ))}
-      <rect ref={cursorRef} rx="1" fill={accentColor} x="0" y="16.390625" width="11" height="97.4375" />
+
+      <text
+        ref={(el) => { hRef.current = el; }}
+        x={H_X} y={HR_Y}
+        fontFamily="'Lexend', sans-serif"
+        fontSize="26" fontWeight="700"
+        fill={hrColor}
+        opacity="0"
+      >H</text>
+
+      <text
+        ref={(el) => { rRef.current = el; }}
+        x={R_X} y={HR_Y}
+        fontFamily="'Lexend', sans-serif"
+        fontSize="26" fontWeight="700"
+        fill={hrColor}
+        opacity="0"
+      >R</text>
+
+      <rect
+        ref={cursorRef}
+        rx="1" fill={accentColor}
+        x="0" y="13" width="11" height="86"
+      />
     </svg>
   );
 }
