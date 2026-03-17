@@ -1,39 +1,51 @@
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '@/hooks/useTheme';
 import { AnimatedLogo } from '@/components/AnimatedLogo';
 
-interface TopNavProps {
-  onMenuClick: () => void;
-}
+const NAV_TABS = [
+  { label: '계정 관리', href: '/users' },
+];
 
-export function TopNav({ onMenuClick }: TopNavProps) {
+export function TopNav() {
   const navigate = useNavigate();
-  const { isDark } = useTheme();
+  const location = useLocation();
+  const { isDark, toggle } = useTheme();
 
   const username = localStorage.getItem('username') ?? '';
-  const email = localStorage.getItem('email') ?? '';
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate('/login');
+  };
 
   return (
     <header className="topnav">
-      <button className="menu-btn" onClick={onMenuClick} aria-label="메뉴">
-        <svg width="20" height="16" viewBox="0 0 16 13" fill="none">
-          <rect x="0" y="0" width="16" height="3" rx="1" fill="currentColor" />
-          <rect x="0" y="5" width="16" height="3" rx="1" fill="currentColor" />
-          <rect x="0" y="10" width="16" height="3" rx="1" fill="currentColor" />
-        </svg>
-      </button>
-
       <a className="nav-logo-link" href="/users" onClick={(e) => { e.preventDefault(); navigate('/users'); }}>
         <AnimatedLogo variant={isDark ? 'dark' : 'light'} className="nav-logo-obj" />
         <span className="nav-logo-hr">HR</span>
       </a>
 
+      <nav className="nav-tabs">
+        {NAV_TABS.map((tab) => (
+          <a
+            key={tab.href}
+            className={`nav-tab${location.pathname === tab.href ? ' active' : ''}`}
+            href={tab.href}
+            onClick={(e) => { e.preventDefault(); navigate(tab.href); }}
+          >
+            {tab.label}
+          </a>
+        ))}
+      </nav>
+
       <div className="topnav-right">
+        <span className="profile-name">{username}</span>
         <div className="divider-v" />
-        <div className="profile-info">
-          <span className="profile-name">{username}</span>
-          <span className="profile-role">{email}</span>
-        </div>
+        <button className="sidebar-toggle" onClick={toggle} aria-label="테마 전환">
+          <div className="toggle-track"><div className="toggle-thumb" /></div>
+        </button>
+        <div className="divider-v" />
+        <button className="logout-btn" onClick={handleLogout}>로그아웃</button>
       </div>
     </header>
   );
