@@ -1,23 +1,34 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '@/hooks/useTheme';
+import { AnimatedLogo } from '@/components/AnimatedLogo';
 import { apiFetch } from '@/services/api';
 import './LoginPage.css';
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [session, setSession] = useState('');
-  const [challenge, setChallenge] = useState(false);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { isDark, toggle } = useTheme();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const pwRef = useRef<HTMLInputElement>(null);
+  const newPwRef = useRef<HTMLInputElement>(null);
+
+  const [challengeMode, setChallengeMode] = useState(false);
+  const [challengeSession, setChallengeSession] = useState('');
+  const [challengeEmail, setChallengeEmail] = useState('');
+
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
+    const email = emailRef.current?.value.trim() ?? '';
+    const pw = pwRef.current?.value ?? '';
+    if (!email) { setError('이메일을 입력해 주세요.'); emailRef.current?.focus(); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError('올바른 이메일 형식을 입력해 주세요.'); emailRef.current?.focus(); return; }
+    if (!pw) { setError('비밀번호를 입력해 주세요.'); pwRef.current?.focus(); return; }
+
     setError('');
-    setLoading(true);
+    setIsLoading(true);
     try {
       const data = await apiFetch<{
         success: boolean;
@@ -25,14 +36,15 @@ export function LoginPage() {
         error?: { message: string };
       }>('/auth/login', {
         method: 'POST',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password: pw }),
       });
 
-      if (!data.success) { setError(data.error?.message || '로그인 실패'); return; }
+      if (!data.success) { setError(data.error?.message || '이메일 또는 비밀번호가 올바르지 않습니다.'); return; }
 
       if (data.data?.challenge === 'NEW_PASSWORD_REQUIRED') {
-        setSession(data.data.session ?? '');
-        setChallenge(true);
+        setChallengeEmail(email);
+        setChallengeSession(data.data.session ?? '');
+        setChallengeMode(true);
         return;
       }
 
@@ -45,17 +57,19 @@ export function LoginPage() {
         navigate('/users');
       }
     } catch {
-      setError('서버 연결 실패');
+      setError('이메일 또는 비밀번호가 올바르지 않습니다.');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
-  };
+  }
 
-  const handleChallenge = async (e: React.FormEvent) => {
+  async function handleChallenge(e: React.FormEvent) {
     e.preventDefault();
-    if (newPassword !== confirmPassword) { setError('비밀번호가 일치하지 않습니다.'); return; }
+    const newPw = newPwRef.current?.value ?? '';
+    if (!newPw) { setError('새 비밀번호를 입력해 주세요.'); newPwRef.current?.focus(); return; }
+
     setError('');
-    setLoading(true);
+    setIsLoading(true);
     try {
       const data = await apiFetch<{
         success: boolean;
@@ -63,61 +77,70 @@ export function LoginPage() {
         error?: { message: string };
       }>('/auth/challenge', {
         method: 'POST',
-        body: JSON.stringify({ email, session, newPassword }),
+        body: JSON.stringify({ email: challengeEmail, session: challengeSession, newPassword: newPw }),
       });
 
-      if (!data.success) { setError(data.error?.message || '비밀번호 변경 실패'); return; }
+      if (!data.success) { setError(data.error?.message || '비밀번호 변경에 실패했습니다. 다시 시도해 주세요.'); return; }
 
       if (data.data?.accessToken) {
         localStorage.setItem('access_token', data.data.accessToken);
         localStorage.setItem('id_token', data.data.idToken ?? '');
         localStorage.setItem('refresh_token', data.data.refreshToken ?? '');
         localStorage.setItem('username', data.data.username ?? '');
-        localStorage.setItem('email', data.data.email ?? email);
+        localStorage.setItem('email', data.data.email ?? challengeEmail);
         navigate('/users');
       }
     } catch {
-      setError('서버 연결 실패');
+      setError('비밀번호 변경에 실패했습니다. 다시 시도해 주세요.');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
-  };
+  }
 
   return (
-    <div className="login-page">
-      <div className="login-card">
-        <div className="login-logo">DnDn HR</div>
-        <div className="login-subtitle">인사 관리 포털</div>
+    <>
+      <button type="button" className="mode-toggle" onClick={toggle} aria-label={isDark ? '라이트 모드로 전환' : '다크 모드로 전환'}>
+        <div className="toggle-track"><div className="toggle-thumb" /></div>
+      </button>
 
-        {!challenge ? (
-          <form className="login-form" onSubmit={handleLogin}>
-            <div className="field-group">
-              <label className="field-label">이메일</label>
-              <input className="field-input" type="email" value={email} onChange={e => setEmail(e.target.value)} required autoFocus />
+      <div className="glow" />
+
+      <div className="login-container">
+        <div className="logo-wrap">
+          <AnimatedLogo variant={isDark ? 'dark' : 'light'} className="login-logo-obj" />
+          <div className="logo-hr">HR</div>
+        </div>
+
+        {!challengeMode ? (
+          <form className="form" onSubmit={handleLogin} noValidate>
+            <div className="field">
+              <input className="field-input" ref={emailRef} type="email" placeholder="이메일" autoComplete="email" />
             </div>
-            <div className="field-group">
-              <label className="field-label">비밀번호</label>
-              <input className="field-input" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+            <div className="field">
+              <input className="field-input" ref={pwRef} type="password" placeholder="비밀번호" autoComplete="current-password" />
+              <div className={`error-msg${error ? ' show' : ''}`}>{error}</div>
             </div>
-            {error && <div className="login-error">{error}</div>}
-            <button className="btn-login" type="submit" disabled={loading}>{loading ? '로그인 중…' : '로그인'}</button>
+            <button className="btn-login" type="submit" disabled={isLoading}>
+              {isLoading ? '로그인 중...' : 'LOGIN'}
+            </button>
           </form>
         ) : (
-          <form className="login-form" onSubmit={handleChallenge}>
-            <div className="login-notice">초기 비밀번호를 변경해야 합니다.</div>
-            <div className="field-group">
-              <label className="field-label">새 비밀번호</label>
-              <input className="field-input" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required autoFocus />
+          <form className="form" onSubmit={handleChallenge} noValidate>
+            <p style={{ fontSize: '0.85rem', marginBottom: '8px', opacity: 0.7 }}>
+              첫 로그인입니다. 새 비밀번호를 설정해 주세요.
+            </p>
+            <div className="field">
+              <input className="field-input" ref={newPwRef} type="password" placeholder="새 비밀번호" autoComplete="new-password" />
+              <div className={`error-msg${error ? ' show' : ''}`}>{error}</div>
             </div>
-            <div className="field-group">
-              <label className="field-label">비밀번호 확인</label>
-              <input className="field-input" type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
-            </div>
-            {error && <div className="login-error">{error}</div>}
-            <button className="btn-login" type="submit" disabled={loading}>{loading ? '변경 중…' : '비밀번호 변경'}</button>
+            <button className="btn-login" type="submit" disabled={isLoading}>
+              {isLoading ? '처리 중...' : '비밀번호 설정'}
+            </button>
           </form>
         )}
       </div>
-    </div>
+
+      <div className="version">DnDn HR v1.0</div>
+    </>
   );
 }

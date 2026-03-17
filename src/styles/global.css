@@ -1,32 +1,83 @@
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+/* ── Light (기본값) ── */
 :root {
-  --header-bg: #1f3864;
-  --header-text: #d4dae6;
-  --sub-heading: #edf0f7;
-  --bg: #f5f7fa;
-  --bg-alt: #ffffff;
-  --border: #dde1ea;
-  --text: #1a1d23;
-  --text-muted: #6b7280;
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --danger: #dc2626;
-  --danger-bg: #fef2f2;
-  --success: #16a34a;
-  --success-bg: #f0fdf4;
-  --radius: 8px;
-  --shadow: 0 1px 4px rgba(0,0,0,0.08);
+  color-scheme: light;
+
+  --bg:          #f5f7fa;
+  --bg-card:     #ffffff;
+  --bg-nav:      #ffffff;
+  --bg-alt:      #fafbfc;
+
+  --mint:        #228BE6;
+  --mint-soft:   rgba(34, 139, 230, 0.08);
+  --mint-soft2:  rgba(34, 139, 230, 0.15);
+  --mint-border: rgba(34, 139, 230, 0.25);
+
+  --text:        #111318;
+  --text-sub:    #5a6070;
+  --text-muted:  #9ba3b2;
+
+  --border:        rgba(0, 0, 0, 0.07);
+  --border-med:    rgba(0, 0, 0, 0.11);
+
+  --shadow:        0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+
+  --red:           #f03e3e;
+  --red-soft:      rgba(240, 62, 62, 0.08);
+  --green:         #2f9e44;
+  --green-soft:    rgba(47, 158, 68, 0.08);
 }
 
+/* ── Dark ── */
+:root.dark {
+  color-scheme: dark;
+
+  --bg:          #0d1117;
+  --bg-card:     #161b22;
+  --bg-nav:      #161b22;
+  --bg-alt:      #0d1117;
+
+  --mint:        #4ADEAA;
+  --mint-soft:   rgba(74, 222, 170, 0.10);
+  --mint-soft2:  rgba(74, 222, 170, 0.18);
+  --mint-border: rgba(74, 222, 170, 0.30);
+
+  --text:        #e6edf3;
+  --text-sub:    #8b949e;
+  --text-muted:  #6e7681;
+
+  --border:        rgba(255, 255, 255, 0.08);
+  --border-med:    rgba(255, 255, 255, 0.13);
+
+  --shadow:        0 1px 3px rgba(0,0,0,0.30), 0 4px 12px rgba(0,0,0,0.20);
+
+  --red:           #ff6b6b;
+  --red-soft:      rgba(255, 107, 107, 0.12);
+  --green:         #51cf66;
+  --green-soft:    rgba(81, 207, 102, 0.12);
+}
+
+*, *::before, *::after {
+  margin: 0; padding: 0; box-sizing: border-box;
+  transition:
+    background-color 0.25s ease,
+    border-color     0.25s ease,
+    color            0.20s ease,
+    box-shadow       0.25s ease;
+}
+input, button, select, textarea, a {
+  transition:
+    background-color 0.15s ease,
+    border-color     0.15s ease,
+    color            0.15s ease,
+    opacity          0.15s ease,
+    box-shadow       0.15s ease;
+}
+
+html { overflow-y: scroll; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: var(--bg);
   color: var(--text);
-  font-size: 14px;
-  line-height: 1.5;
+  min-height: 100vh;
 }
-
-button { cursor: pointer; font-family: inherit; font-size: 14px; }
-input, select, textarea { font-family: inherit; font-size: 14px; }
-a { color: inherit; text-decoration: none; }
+a { text-decoration: none; color: inherit; }
