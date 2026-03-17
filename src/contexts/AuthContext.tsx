@@ -79,18 +79,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const token = localStorage.getItem('access_token');
     if (!token) { setIsLoading(false); return; }
     fetchMe()
-      .then(setSession)
-      .catch(() => {
-        // 백엔드 미연동 시 localStorage 값으로 임시 세션 구성
-        const username = localStorage.getItem('username');
-        if (username) {
-          setSession({
-            name: username,
-            role: 'HR 관리자',
-            company: { name: 'DnDn', logoUrl: '', logoDarkUrl: '' },
-          });
-        }
+      .then((sess) => {
+        if (sess.role === 'hr') setSession(sess);
+        else localStorage.clear();
       })
+      .catch(() => localStorage.clear())
       .finally(() => setIsLoading(false));
   }, []);
 
@@ -114,10 +107,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { type: 'success' };
   }, []);
 
-  const challenge = useCallback(async (email: string, newPassword: string, sess: string) => {
+  const challenge = useCallback(async (email: string, newPassword: string, challengeSession: string) => {
     const res = await apiFetch<{ success: boolean; data: ApiLoginData; error?: { message: string } }>(
       '/auth/challenge',
-      { method: 'POST', body: JSON.stringify({ email, session: sess, newPassword }) },
+      { method: 'POST', body: JSON.stringify({ email, session: challengeSession, newPassword }) },
     );
     if (!res.success) throw new Error(res.error?.message ?? '비밀번호 변경 실패');
     saveTokens(res.data);
