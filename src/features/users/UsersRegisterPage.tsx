@@ -1,41 +1,42 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PasswordRules, validatePassword } from '@/components/PasswordRules';
+import { apiFetch } from '@/services/api';
 import './UsersRegisterPage.css';
 
-const DEPT_TREE = [
-  { name: '기술본부', teams: ['플랫폼팀', '보안팀', '인프라팀', '개발팀'] },
-  { name: '경영지원본부', teams: ['인사팀', '경영지원팀'] },
-];
-const DEPARTMENTS = DEPT_TREE.flatMap((d) => d.teams);
+interface Dept { id: string; name: string; parentId: string | null; }
+
 const POSITIONS = ['사원', '대리', '과장', '차장', '부장', '이사'];
+const ROLES = [
+  { value: 'member', label: '일반 사원' },
+  { value: 'leader', label: '부서장' },
+  { value: 'hr',     label: 'HR 관리자' },
+];
 
 interface RegisterForm {
-  employeeNumber: string;
+  employeeNo: string;
   name: string;
-  department: string;
+  departmentId: string;
   position: string;
   email: string;
-  phone: string;
-  initPassword: string;
+  role: string;
 }
 
 const EMPTY: RegisterForm = {
-  employeeNumber: '',
-  name: '',
-  department: '',
-  position: '',
-  email: '',
-  phone: '',
-  initPassword: '',
+  employeeNo: '', name: '', departmentId: '', position: '', email: '', role: 'member',
 };
 
 export function UsersRegisterPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState<RegisterForm>(EMPTY);
-  const [errors, setErrors] = useState<Partial<RegisterForm>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof RegisterForm, string>>>({});
+  const [depts, setDepts] = useState<Dept[]>([]);
   const [submitting, setSubmitting] = useState(false);
-  const [pwFocused, setPwFocused] = useState(false);
+
+  useEffect(() => {
+    apiFetch<{ success: boolean; data: Dept[] }>('/hr/departments').then((res) => {
+      setDepts(res.data.filter((d) => d.parentId !== null));
+    });
+  }, []);
 
   const set = (field: keyof RegisterForm, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -43,16 +44,13 @@ export function UsersRegisterPage() {
   };
 
   const validate = (): boolean => {
-    const e: Partial<RegisterForm> = {};
-    if (!form.employeeNumber.trim()) e.employeeNumber = '사번을 입력하세요.';
+    const e: Partial<Record<keyof RegisterForm, string>> = {};
+    if (!form.employeeNo.trim()) e.employeeNo = '사번을 입력하세요.';
     if (!form.name.trim()) e.name = '이름을 입력하세요.';
-    if (!form.department) e.department = '부서를 선택하세요.';
+    if (!form.departmentId) e.departmentId = '부서를 선택하세요.';
     if (!form.position) e.position = '직급을 선택하세요.';
     if (!form.email.trim()) e.email = '이메일을 입력하세요.';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = '올바른 이메일 형식이 아닙니다.';
-    if (!form.phone.trim()) e.phone = '전화번호를 입력하세요.';
-    if (!form.initPassword.trim()) e.initPassword = '초기 비밀번호를 입력하세요.';
-    else if (!validatePassword(form.initPassword)) e.initPassword = '비밀번호 규칙을 확인하세요.';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -61,13 +59,20 @@ export function UsersRegisterPage() {
     if (!validate()) return;
     setSubmitting(true);
     try {
-      /* TODO: POST /hr/users
-       * body: { employeeNumber, name, department, position, email, phone, initPassword }
-       * 1. Cognito AdminCreateUser(TemporaryPassword=initPassword, MessageAction="SUPPRESS")
-       * 2. DB users 테이블 insert
-       */
-      await new Promise((r) => setTimeout(r, 600)); // mock delay
+      await apiFetch('/hr/users', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: form.email,
+          name: form.name,
+          employeeNo: form.employeeNo,
+          position: form.position,
+          departmentId: form.departmentId,
+          role: form.role,
+        }),
+      });
       navigate('/users');
+    } catch {
+      setErrors({ email: '등록에 실패했습니다. 다시 시도해 주세요.' });
     } finally {
       setSubmitting(false);
     }
@@ -76,7 +81,6 @@ export function UsersRegisterPage() {
   return (
     <div className="register-page">
 
-      {/* ── 뒤로가기 ── */}
       <button className="btn-back" onClick={() => navigate('/users')}>
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
           <path d="M8 2L3 6.5 8 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -91,7 +95,6 @@ export function UsersRegisterPage() {
 
         <div className="register-divider" />
 
-        {/* ── 폼 ── */}
         <div className="register-form">
 
           {/* 사번 / 이름 */}
@@ -99,11 +102,11 @@ export function UsersRegisterPage() {
             <div className="form-field">
               <label>사번 <span className="required">*</span></label>
               <input
-                value={form.employeeNumber}
-                onChange={(e) => set('employeeNumber', e.target.value)}
-                className={errors.employeeNumber ? 'input-error' : ''}
+                value={form.employeeNo}
+                onChange={(e) => set('employeeNo', e.target.value)}
+                className={errors.employeeNo ? 'input-error' : ''}
               />
-              {errors.employeeNumber && <span className="field-error">{errors.employeeNumber}</span>}
+              {errors.employeeNo && <span className="field-error">{errors.employeeNo}</span>}
             </div>
             <div className="form-field">
               <label>이름 <span className="required">*</span></label>
@@ -121,14 +124,14 @@ export function UsersRegisterPage() {
             <div className="form-field">
               <label>부서 <span className="required">*</span></label>
               <select
-                value={form.department}
-                onChange={(e) => set('department', e.target.value)}
-                className={errors.department ? 'input-error' : ''}
+                value={form.departmentId}
+                onChange={(e) => set('departmentId', e.target.value)}
+                className={errors.departmentId ? 'input-error' : ''}
               >
                 <option value="">선택</option>
-                {DEPARTMENTS.map((d) => <option key={d} value={d}>{d}</option>)}
+                {depts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
               </select>
-              {errors.department && <span className="field-error">{errors.department}</span>}
+              {errors.departmentId && <span className="field-error">{errors.departmentId}</span>}
             </div>
             <div className="form-field">
               <label>직급 <span className="required">*</span></label>
@@ -156,39 +159,19 @@ export function UsersRegisterPage() {
             {errors.email && <span className="field-error">{errors.email}</span>}
           </div>
 
-          {/* 전화번호 */}
+          {/* 역할 */}
           <div className="form-field">
-            <label>전화번호 <span className="required">*</span></label>
-            <input
-              value={form.phone}
-              onChange={(e) => set('phone', e.target.value)}
-              className={errors.phone ? 'input-error' : ''}
-            />
-            {errors.phone && <span className="field-error">{errors.phone}</span>}
+            <label>역할</label>
+            <select value={form.role} onChange={(e) => set('role', e.target.value)}>
+              {ROLES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+            </select>
           </div>
 
-          {/* 초기 비밀번호 */}
-          <div className="form-field">
-            <label>초기 비밀번호 <span className="required">*</span></label>
-            <div style={{ position: 'relative' }}>
-              <input
-                value={form.initPassword}
-                onChange={(e) => set('initPassword', e.target.value)}
-                onFocus={() => setPwFocused(true)}
-                onBlur={() => setPwFocused(false)}
-                className={errors.initPassword ? 'input-error' : ''}
-              />
-              <PasswordRules password={form.initPassword} show={pwFocused} />
-            </div>
-            {errors.initPassword && <span className="field-error">{errors.initPassword}</span>}
-          </div>
+          <p className="register-note">등록 후 Cognito에서 임시 비밀번호가 이메일로 자동 발송됩니다.</p>
         </div>
 
-        {/* ── 액션 ── */}
         <div className="register-actions">
-          <button className="btn-ghost-sm" onClick={() => navigate('/users')} disabled={submitting}>
-            취소
-          </button>
+          <button className="btn-ghost-sm" onClick={() => navigate('/users')} disabled={submitting}>취소</button>
           <button className="btn-primary-sm" onClick={handleSubmit} disabled={submitting}>
             {submitting ? '등록 중...' : '사원 등록'}
           </button>
