@@ -34,6 +34,7 @@ export function UserDetailPage() {
   const [form, setForm] = useState<Partial<User>>({});
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [resetConfirm, setResetConfirm] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -43,7 +44,8 @@ export function UserDetailPage() {
       setUser(userRes.data);
       setForm(userRes.data);
       setDepts(deptsRes.data.filter((d) => d.parentId !== null));
-    }).finally(() => setLoading(false));
+    }).catch((err) => console.error('Failed to load user:', err))
+      .finally(() => setLoading(false));
   }, [id]);
 
   if (loading) return <div className="detail-page"><p style={{ padding: '40px' }}>로딩 중...</p></div>;
@@ -53,31 +55,48 @@ export function UserDetailPage() {
     setForm((prev) => ({ ...prev, [field]: value }));
 
   const handleSave = async () => {
-    const updated = await apiFetch<{ success: boolean; data: User }>(`/hr/users/${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify({
-        name: form.name,
-        employeeNo: form.employeeNo,
-        position: form.position,
-        departmentId: form.departmentId,
-        role: form.role,
-      }),
-    });
-    setUser(updated.data);
-    setForm(updated.data);
-    setEditing(false);
+    setError(null);
+    try {
+      const updated = await apiFetch<{ success: boolean; data: User }>(`/hr/users/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          name: form.name,
+          employeeNo: form.employeeNo,
+          position: form.position,
+          departmentId: form.departmentId,
+          role: form.role,
+        }),
+      });
+      setUser(updated.data);
+      setForm(updated.data);
+      setEditing(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '저장에 실패했습니다.');
+    }
   };
 
-  const handleCancel = () => { setForm(user); setEditing(false); };
+  const handleCancel = () => { setForm(user); setEditing(false); setError(null); };
 
   const handleDelete = async () => {
-    await apiFetch(`/hr/users/${id}`, { method: 'DELETE' });
-    navigate('/users');
+    setError(null);
+    try {
+      await apiFetch(`/hr/users/${id}`, { method: 'DELETE' });
+      navigate('/users');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '삭제에 실패했습니다.');
+      setDeleteConfirm(false);
+    }
   };
 
   const handleReset = async () => {
-    await apiFetch(`/hr/users/${id}/reset-password`, { method: 'POST' });
-    setResetConfirm(false);
+    setError(null);
+    try {
+      await apiFetch(`/hr/users/${id}/reset-password`, { method: 'POST' });
+      setResetConfirm(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '비밀번호 초기화에 실패했습니다.');
+      setResetConfirm(false);
+    }
   };
 
   return (
@@ -146,6 +165,8 @@ export function UserDetailPage() {
             <div className="detail-view-row"><dt>이메일</dt><dd>{user.email}</dd></div>
           </dl>
         )}
+
+        {error && <p className="detail-error">{error}</p>}
 
         <div className="detail-actions">
           {editing ? (

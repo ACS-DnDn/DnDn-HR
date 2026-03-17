@@ -35,7 +35,7 @@ export function UsersRegisterPage() {
   useEffect(() => {
     apiFetch<{ success: boolean; data: Dept[] }>('/hr/departments').then((res) => {
       setDepts(res.data.filter((d) => d.parentId !== null));
-    });
+    }).catch((err) => console.error('Failed to load departments:', err));
   }, []);
 
   const set = (field: keyof RegisterForm, value: string) => {

@@ -3,11 +3,13 @@ import { AnimatedLogo } from '@/components/AnimatedLogo';
 import { useTheme } from '@/hooks/useTheme';
 import { useSession } from '@/hooks/useSession';
 
-interface TopNavProps {
-  breadcrumb?: React.ReactNode;
-}
+const ROLE_LABELS: Record<string, string> = {
+  hr: 'HR 관리자',
+  leader: '부서장',
+  member: '일반 사원',
+};
 
-export function TopNav({ breadcrumb }: TopNavProps) {
+export function TopNav() {
   const navigate = useNavigate();
   const { isDark } = useTheme();
   const session = useSession();
@@ -22,14 +24,10 @@ export function TopNav({ breadcrumb }: TopNavProps) {
         <AnimatedLogo variant={isDark ? 'dark' : 'light'} className="nav-logo-obj" />
       </a>
 
-      {breadcrumb && (
-        <div className="nav-title">{breadcrumb}</div>
-      )}
-
       <div className="topnav-right">
         <div className="profile-info">
           <span className="profile-name">{session.name}</span>
-          <span className="profile-role">{session.role}</span>
+          <span className="profile-role">{ROLE_LABELS[session.role] ?? session.role}</span>
         </div>
         <div className="divider-v" />
         <span className="company-name">{session.company.name}</span>

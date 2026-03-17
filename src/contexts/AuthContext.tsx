@@ -52,6 +52,12 @@ export const AuthContext = createContext<AuthContextValue>({
 });
 
 /* ── 헬퍼 ── */
+const AUTH_KEYS = ['access_token', 'refresh_token', 'id_token', 'username', 'email'] as const;
+
+function clearAuthStorage() {
+  AUTH_KEYS.forEach((key) => localStorage.removeItem(key));
+}
+
 function saveTokens(data: ApiLoginData) {
   localStorage.setItem('access_token', data.accessToken);
   localStorage.setItem('refresh_token', data.refreshToken);
@@ -81,9 +87,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetchMe()
       .then((sess) => {
         if (sess.role === 'hr') setSession(sess);
-        else localStorage.clear();
+        else clearAuthStorage();
       })
-      .catch(() => localStorage.clear())
+      .catch(() => clearAuthStorage())
       .finally(() => setIsLoading(false));
   }, []);
 
@@ -98,9 +104,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { type: 'challenge', session: data.session, email };
     }
     saveTokens(data as ApiLoginData);
-    const sess = await fetchMe();
+    let sess: Session;
+    try {
+      sess = await fetchMe();
+    } catch {
+      clearAuthStorage();
+      throw new Error('사용자 정보를 불러올 수 없습니다.');
+    }
     if (sess.role !== 'hr') {
-      localStorage.clear();
+      clearAuthStorage();
       throw new Error('접근 권한이 없습니다.');
     }
     setSession(sess);
@@ -114,9 +126,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
     if (!res.success) throw new Error(res.error?.message ?? '비밀번호 변경 실패');
     saveTokens(res.data);
-    const sess = await fetchMe();
+    let sess: Session;
+    try {
+      sess = await fetchMe();
+    } catch {
+      clearAuthStorage();
+      throw new Error('사용자 정보를 불러올 수 없습니다.');
+    }
     if (sess.role !== 'hr') {
-      localStorage.clear();
+      clearAuthStorage();
       throw new Error('접근 권한이 없습니다.');
     }
     setSession(sess);

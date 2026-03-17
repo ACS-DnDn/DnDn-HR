@@ -48,7 +48,8 @@ export function UsersPage() {
       const nonRoot = all.filter((d) => d.parentId !== null);
       setDepts(nonRoot);
       setExpanded(new Set(nonRoot.filter((d) => d.parentId === rootId).map((d) => d.id)));
-    }).finally(() => setLoading(false));
+    }).catch((err) => console.error('Failed to load users/departments:', err))
+      .finally(() => setLoading(false));
   }, []);
 
   const deptIdSet = useMemo(() => new Set(depts.map((d) => d.id)), [depts]);

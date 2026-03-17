@@ -8,6 +8,12 @@ interface NavItem {
   icon: React.ReactNode;
 }
 
+const ROLE_LABELS: Record<string, string> = {
+  hr: 'HR 관리자',
+  leader: '부서장',
+  member: '일반 사원',
+};
+
 const NAV_ITEMS: { section: string; items: NavItem[] }[] = [
   {
     section: '인사관리',
@@ -67,7 +73,7 @@ export function Sidebar() {
         <div className="nav-item" style={{ gap: 10, cursor: 'default', pointerEvents: 'none' }}>
           <div>
             <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{session.name}</div>
-            <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>{session.role}</div>
+            <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>{ROLE_LABELS[session.role] ?? session.role}</div>
           </div>
           <button
             className="sidebar-toggle"

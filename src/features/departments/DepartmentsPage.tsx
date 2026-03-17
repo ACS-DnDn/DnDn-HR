@@ -85,6 +85,7 @@ export function DepartmentsPage() {
   const [deptNodes, setDeptNodes] = useState<DeptNode[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [addingName, setAddingName] = useState('');
@@ -98,7 +99,8 @@ export function DepartmentsPage() {
     ]).then(([deptsRes, usersRes]) => {
       setDeptNodes(deptsRes.data);
       setMembers(usersRes.data);
-    }).finally(() => setLoading(false));
+    }).catch((err) => console.error('Failed to load departments/users:', err))
+      .finally(() => setLoading(false));
   }, []);
 
   const nodes = useMemo(
@@ -142,30 +144,52 @@ export function DepartmentsPage() {
 
   async function handleAddDept() {
     const name = addingName.trim();
-    if (!name || !selected) return;
-    const res = await apiFetch<{ success: boolean; data: DeptNode }>('/hr/departments', {
-      method: 'POST',
-      body: JSON.stringify({ name, parentId: selected }),
-    });
-    setDeptNodes((prev) => [...prev, res.data]);
-    setAddingName('');
-    setIsAdding(false);
+    if (!name || !selected || saving) return;
+    setSaving(true);
+    try {
+      const res = await apiFetch<{ success: boolean; data: DeptNode }>('/hr/departments', {
+        method: 'POST',
+        body: JSON.stringify({ name, parentId: selected }),
+      });
+      setDeptNodes((prev) => [...prev, res.data]);
+      setAddingName('');
+      setIsAdding(false);
+    } catch (err) {
+      console.error('Failed to add department:', err);
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function handleDeleteDept(id: string) {
-    await apiFetch(`/hr/departments/${id}`, { method: 'DELETE' });
-    setDeptNodes((prev) => prev.filter((n) => n.id !== id));
-    setSelected(null);
+    if (saving) return;
+    setSaving(true);
+    try {
+      await apiFetch(`/hr/departments/${id}`, { method: 'DELETE' });
+      setDeptNodes((prev) => prev.filter((n) => n.id !== id));
+      setSelected(null);
+    } catch (err) {
+      console.error('Failed to delete department:', err);
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function handleSaveLeader() {
-    if (!selected) return;
-    const res = await apiFetch<{ success: boolean; data: DeptNode }>(
-      `/hr/departments/${selected}/leader`,
-      { method: 'PATCH', body: JSON.stringify({ leaderId: pendingLeader || null }) },
-    );
-    setDeptNodes((prev) => prev.map((n) => n.id === selected ? res.data : n));
-    setIsEditingLeader(false);
+    if (!selected || saving) return;
+    setSaving(true);
+    try {
+      const res = await apiFetch<{ success: boolean; data: DeptNode }>(
+        `/hr/departments/${selected}/leader`,
+        { method: 'PATCH', body: JSON.stringify({ leaderId: pendingLeader || null }) },
+      );
+      setDeptNodes((prev) => prev.map((n) => n.id === selected ? res.data : n));
+      setIsEditingLeader(false);
+    } catch (err) {
+      console.error('Failed to set leader:', err);
+    } finally {
+      setSaving(false);
+    }
   }
 
   if (loading) return <div className="dept-page"><p style={{ padding: '40px' }}>로딩 중...</p></div>;
@@ -185,7 +209,7 @@ export function DepartmentsPage() {
         autoFocus
       />
       <div className="detail-add-btns">
-        <button className="detail-add-confirm" onClick={handleAddDept}>추가</button>
+        <button className="detail-add-confirm" onClick={handleAddDept} disabled={saving}>추가</button>
         <button className="detail-add-cancel" onClick={() => { setIsAdding(false); setAddingName(''); }}>취소</button>
       </div>
     </div>
@@ -235,6 +259,7 @@ export function DepartmentsPage() {
                   <button
                     className="dept-action-delete"
                     onClick={() => handleDeleteDept(selectedNode.id)}
+                    disabled={saving}
                   >
                     삭제
                   </button>
@@ -272,7 +297,7 @@ export function DepartmentsPage() {
                           ))}
                         </select>
                         <div className="detail-add-btns">
-                          <button className="detail-add-confirm" onClick={handleSaveLeader}>저장</button>
+                          <button className="detail-add-confirm" onClick={handleSaveLeader} disabled={saving}>저장</button>
                           <button className="detail-add-cancel" onClick={() => setIsEditingLeader(false)}>취소</button>
                         </div>
                       </div>
