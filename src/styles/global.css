@@ -25,6 +25,9 @@
   --red-soft:      rgba(240, 62, 62, 0.08);
   --green:         #2f9e44;
   --green-soft:    rgba(47, 158, 68, 0.08);
+
+  --nav-h: 56px;
+  --sidebar-w: 220px;
 }
 
 /* ── Dark ── */
