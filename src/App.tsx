@@ -12,6 +12,8 @@ import '@/styles/global.css';
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { session, isLoading } = useAuth();
   if (isLoading) return null;
+  // 토큰은 있는데 session 상태가 아직 반영 안 된 경우 (challenge 직후 race condition)
+  if (!session && localStorage.getItem('access_token')) return null;
   if (!session) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
