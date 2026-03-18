@@ -10,6 +10,10 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
       ...options.headers,
     },
   });
-  const data = await res.json();
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const message = (data as { error?: { message?: string } })?.error?.message ?? `HTTP ${res.status}`;
+    throw new Error(message);
+  }
   return data as T;
 }
