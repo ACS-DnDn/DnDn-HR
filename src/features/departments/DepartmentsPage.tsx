@@ -91,6 +91,7 @@ export function DepartmentsPage() {
   const [addingName, setAddingName] = useState('');
   const [isEditingLeader, setIsEditingLeader] = useState(false);
   const [pendingLeader, setPendingLeader] = useState('');
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -127,6 +128,7 @@ export function DepartmentsPage() {
     setIsAdding(false);
     setAddingName('');
     setIsEditingLeader(false);
+    setActionError(null);
   }
 
   function selectNode(id: string) {
@@ -156,6 +158,7 @@ export function DepartmentsPage() {
       setIsAdding(false);
     } catch (err) {
       console.error('Failed to add department:', err);
+      setActionError('부서 추가에 실패했습니다.');
     } finally {
       setSaving(false);
     }
@@ -170,6 +173,7 @@ export function DepartmentsPage() {
       setSelected(null);
     } catch (err) {
       console.error('Failed to delete department:', err);
+      setActionError('부서 삭제에 실패했습니다.');
     } finally {
       setSaving(false);
     }
@@ -187,6 +191,7 @@ export function DepartmentsPage() {
       setIsEditingLeader(false);
     } catch (err) {
       console.error('Failed to set leader:', err);
+      setActionError('부서장 지정에 실패했습니다.');
     } finally {
       setSaving(false);
     }
@@ -251,6 +256,7 @@ export function DepartmentsPage() {
 
         {/* 상세 패널 */}
         <div className={`dept-detail${selectedNode ? ' dept-detail--open' : ''}`}>
+          {actionError && <p className="dept-action-error">{actionError}</p>}
           {selectedNode && (
             <>
               <div className="dept-detail-header">

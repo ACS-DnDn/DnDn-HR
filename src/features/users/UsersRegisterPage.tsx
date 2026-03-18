@@ -35,7 +35,10 @@ export function UsersRegisterPage() {
   useEffect(() => {
     apiFetch<{ success: boolean; data: Dept[] }>('/hr/departments').then((res) => {
       setDepts(res.data.filter((d) => d.parentId !== null));
-    }).catch((err) => console.error('Failed to load departments:', err));
+    }).catch((err) => {
+      console.error('Failed to load departments:', err);
+      setErrors({ departmentId: '부서 목록을 불러올 수 없습니다.' });
+    });
   }, []);
 
   const set = (field: keyof RegisterForm, value: string) => {

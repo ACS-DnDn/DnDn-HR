@@ -44,12 +44,14 @@ export function UserDetailPage() {
       setUser(userRes.data);
       setForm(userRes.data);
       setDepts(deptsRes.data.filter((d) => d.parentId !== null));
-    }).catch((err) => console.error('Failed to load user:', err))
-      .finally(() => setLoading(false));
+    }).catch((err) => {
+      console.error('Failed to load user:', err);
+      setError('데이터를 불러올 수 없습니다.');
+    }).finally(() => setLoading(false));
   }, [id]);
 
   if (loading) return <div className="detail-page"><p style={{ padding: '40px' }}>로딩 중...</p></div>;
-  if (!user) return <div className="detail-page"><p className="detail-not-found">사원을 찾을 수 없습니다.</p></div>;
+  if (!user) return <div className="detail-page"><p className="detail-not-found">{error ?? '사원을 찾을 수 없습니다.'}</p></div>;
 
   const set = (field: keyof User, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));

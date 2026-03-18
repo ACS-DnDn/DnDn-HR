@@ -36,6 +36,7 @@ export function UsersPage() {
   const [filterDeptId, setFilterDeptId] = useState('');
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(1);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -48,8 +49,10 @@ export function UsersPage() {
       const nonRoot = all.filter((d) => d.parentId !== null);
       setDepts(nonRoot);
       setExpanded(new Set(nonRoot.filter((d) => d.parentId === rootId).map((d) => d.id)));
-    }).catch((err) => console.error('Failed to load users/departments:', err))
-      .finally(() => setLoading(false));
+    }).catch((err) => {
+      console.error('Failed to load users/departments:', err);
+      setLoadError('데이터를 불러올 수 없습니다.');
+    }).finally(() => setLoading(false));
   }, []);
 
   const deptIdSet = useMemo(() => new Set(depts.map((d) => d.id)), [depts]);
@@ -105,6 +108,7 @@ export function UsersPage() {
   }
 
   if (loading) return <div className="users-page"><p style={{ padding: '40px' }}>로딩 중...</p></div>;
+  if (loadError) return <div className="users-page"><p style={{ padding: '40px', color: 'var(--color-danger, #e53e3e)' }}>{loadError}</p></div>;
 
   return (
     <div className="users-page">
