@@ -99,7 +99,6 @@ export function LoginPage() {
       <div className="login-container">
         <div className="logo-wrap">
           <AnimatedLogo variant={isDark ? 'dark' : 'light'} className="login-logo-obj" />
-          <div className="logo-hr">HR</div>
         </div>
 
         <form className="form" onSubmit={handleLogin} noValidate>
