@@ -40,8 +40,12 @@ const NAV_ITEMS: { section: string; items: NavItem[] }[] = [
 export function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { toggle } = useTheme();
+  const { isDark, toggle } = useTheme();
   const session = useSession();
+
+  const logoSrc = isDark && session.company.logoDarkUrl
+    ? session.company.logoDarkUrl
+    : session.company.logoUrl;
 
   return (
     <aside className="sidebar">
@@ -71,9 +75,10 @@ export function Sidebar() {
 
       <div className="sidebar-bottom">
         <div className="nav-item" style={{ gap: 10, cursor: 'default', pointerEvents: 'none' }}>
+          {logoSrc && <img className="sidebar-company-logo" src={logoSrc} alt="" />}
           <div>
             <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{session.name}</div>
-            <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>{ROLE_LABELS[session.role] ?? session.role}</div>
+            <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>{session.position ?? ROLE_LABELS[session.role] ?? session.role}</div>
           </div>
           <button
             className="sidebar-toggle"

@@ -11,12 +11,13 @@ export interface Company {
 export interface Session {
   name: string;
   role: string;
+  position: string | null;
   company: Company;
 }
 
 interface ApiMeResponse {
   success: boolean;
-  data: { name: string; role: string; company: { name: string; logoUrl: string } };
+  data: { name: string; role: string; position: string | null; company: { name: string; logoUrl: string } };
 }
 
 interface ApiLoginData {
@@ -68,10 +69,11 @@ function saveTokens(data: ApiLoginData) {
 
 async function fetchMe(): Promise<Session> {
   const res = await apiFetch<ApiMeResponse>('/auth/me');
-  const { name, role, company } = res.data;
+  const { name, role, position, company } = res.data;
   return {
     name,
     role,
+    position: position ?? null,
     company: { name: company.name, logoUrl: company.logoUrl, logoDarkUrl: company.logoUrl },
   };
 }

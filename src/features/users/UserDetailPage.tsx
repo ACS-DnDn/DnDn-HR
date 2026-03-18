@@ -16,7 +16,6 @@ interface User {
 
 interface Dept { id: string; name: string; parentId: string | null; }
 
-const POSITIONS = ['사원', '대리', '과장', '차장', '부장', '이사'];
 const ROLES = [
   { value: 'member', label: '일반 사원' },
   { value: 'leader', label: '부서장' },
@@ -142,10 +141,7 @@ export function UserDetailPage() {
               </div>
               <div className="detail-field">
                 <label>직급</label>
-                <select value={form.position ?? ''} onChange={(e) => set('position', e.target.value)}>
-                  <option value="">선택</option>
-                  {POSITIONS.map((p) => <option key={p} value={p}>{p}</option>)}
-                </select>
+                <input value={form.position ?? ''} onChange={(e) => set('position', e.target.value)} placeholder="직급 입력" />
               </div>
             </div>
             <div className="detail-field">
