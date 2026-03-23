@@ -1,0 +1,189 @@
+.settings-page {
+  padding: 32px 40px;
+  max-width: 640px;
+}
+
+.settings-header {
+  margin-bottom: 28px;
+}
+
+.settings-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+/* ── 토스트 메시지 ── */
+.settings-toast {
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  animation: toast-in 0.25s ease-out;
+}
+.settings-toast--success {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+.settings-toast--error {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* ── 카드 ── */
+.settings-card {
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 12px;
+  padding: 32px;
+}
+
+/* ── 로고 섹션 ── */
+.settings-logo-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 28px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--border, #e2e8f0);
+}
+
+.settings-logo-box {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px dashed var(--border, #e2e8f0);
+  cursor: pointer;
+  transition: border-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg, #f8fafc);
+}
+.settings-logo-box:hover {
+  border-color: var(--mint);
+}
+
+.settings-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 8px;
+}
+
+.settings-logo-placeholder {
+  color: var(--text-muted);
+  opacity: 0.4;
+}
+
+.settings-logo-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.settings-logo-box:hover .settings-logo-overlay {
+  opacity: 1;
+}
+
+.settings-logo-hint {
+  margin-top: 10px;
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+/* ── 필드 ── */
+.settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settings-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.settings-name-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.settings-name-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.settings-name-edit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-name-input {
+  flex: 1;
+  height: 38px;
+  padding: 0 12px;
+  background: var(--bg, #f8fafc);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 8px;
+  font-family: Pretendard, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.settings-name-input:focus {
+  border-color: var(--mint);
+}
+
+/* ── 버튼 ── */
+.settings-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-family: Pretendard, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+.settings-btn:hover { opacity: 0.85; }
+.settings-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.settings-btn--save {
+  background: var(--mint);
+  color: #fff;
+}
+.settings-btn--cancel {
+  background: var(--bg, #f1f5f9);
+  color: var(--text-muted);
+}
+.settings-btn--edit {
+  background: none;
+  color: var(--mint);
+  padding: 4px 8px;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

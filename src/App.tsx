@@ -7,6 +7,7 @@ import { UsersPage } from '@/features/users/UsersPage';
 import { UsersRegisterPage } from '@/features/users/UsersRegisterPage';
 import { UserDetailPage } from '@/features/users/UserDetailPage';
 import { DepartmentsPage } from '@/features/departments/DepartmentsPage';
+import { CompanySettingsPage } from '@/features/settings/CompanySettingsPage';
 import { Layout } from '@/components/layout/Layout';
 import '@/styles/global.css';
 
@@ -44,6 +45,7 @@ function AppRoutes() {
         <Route path="/users/register" element={<UsersRegisterPage />} />
         <Route path="/users/:id" element={<UserDetailPage />} />
         <Route path="/departments" element={<DepartmentsPage />} />
+        <Route path="/settings" element={<CompanySettingsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/users" replace />} />
     </Routes>
