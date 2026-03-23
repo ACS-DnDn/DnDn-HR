@@ -25,6 +25,7 @@ permissions:
 env:
   AWS_REGION: ap-northeast-2
   ECR_REGISTRY: 387721658341.dkr.ecr.ap-northeast-2.amazonaws.com
+  BASTION_HOST: 13.124.119.204
 
 jobs:
   publish-hr:
@@ -49,3 +50,25 @@ jobs:
           docker push $REPO:${{ github.sha }}
           docker push $REPO:latest
           echo "HR image: $REPO:${{ github.sha }}" >> "$GITHUB_STEP_SUMMARY"
+
+  deploy-hr:
+    name: Rollout Restart HR
+    needs: publish-hr
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.BASTION_SSH_KEY }}" > ~/.ssh/bastion.pem
+          chmod 600 ~/.ssh/bastion.pem
+          ssh-keyscan -H ${{ env.BASTION_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Rollout restart
+        run: |
+          ssh -i ~/.ssh/bastion.pem -o StrictHostKeyChecking=no ec2-user@${{ env.BASTION_HOST }} \
+            "kubectl rollout restart deployment/dndn-hr -n dndn-hr"
+          echo "✓ HR deployment restarted"
+
+      - name: Cleanup
+        if: always()
+        run: rm -f ~/.ssh/bastion.pem
