@@ -27,7 +27,6 @@ export function LoginPage() {
   const [challengeState, setChallengeState] = useState<{ session: string; email: string } | null>(null);
   const [modalError, setModalError] = useState('');
   const [modalLoading, setModalLoading] = useState(false);
-  const curPwRef = useRef<HTMLInputElement>(null);
   const newPwRef = useRef<HTMLInputElement>(null);
   const confirmPwRef = useRef<HTMLInputElement>(null);
   const [newPwValue, setNewPwValue] = useState('');
@@ -64,11 +63,9 @@ export function LoginPage() {
     e.preventDefault();
     if (!challengeState) return;
 
-    const curPw = curPwRef.current?.value ?? '';
     const newPw = newPwRef.current?.value ?? '';
     const confirmPw = confirmPwRef.current?.value ?? '';
 
-    if (!curPw) { setModalError('현재 비밀번호를 입력해 주세요.'); curPwRef.current?.focus(); return; }
     if (!newPw) { setModalError('새 비밀번호를 입력해 주세요.'); newPwRef.current?.focus(); return; }
 
     const failedRule = PW_RULES.find((r) => !r.test(newPw));
@@ -120,19 +117,10 @@ export function LoginPage() {
       {/* ── 비밀번호 변경 모달 ── */}
       {challengeState && (
         <div className="pw-modal-overlay">
-          <div className="pw-modal">
-            <h3 className="pw-modal-title">비밀번호를 변경해주세요</h3>
+          <div className="pw-modal" role="dialog" aria-modal="true" aria-labelledby="pw-modal-title">
+            <h3 id="pw-modal-title" className="pw-modal-title">비밀번호를 변경해주세요</h3>
+            <p className="pw-modal-desc">관리자가 발급한 임시 비밀번호를 새 비밀번호로 변경해 주세요.</p>
             <form onSubmit={handleChangePassword} noValidate>
-              <div className="pw-modal-field">
-                <input
-                  className="pw-modal-input"
-                  ref={curPwRef}
-                  type="password"
-                  placeholder="현재 비밀번호"
-                  autoComplete="current-password"
-                  autoFocus
-                />
-              </div>
               <div className="pw-modal-field pw-modal-field--has-rules pw-modal-field--toggle">
                 <input
                   className="pw-modal-input"
@@ -140,6 +128,7 @@ export function LoginPage() {
                   type={showNewPw ? 'text' : 'password'}
                   placeholder="새 비밀번호"
                   autoComplete="new-password"
+                  autoFocus
                   value={newPwValue}
                   onChange={(e) => setNewPwValue(e.target.value)}
                   onFocus={() => setShowRules(true)}
