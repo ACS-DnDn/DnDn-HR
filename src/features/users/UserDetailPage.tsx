@@ -16,6 +16,17 @@ interface User {
 
 interface Dept { id: string; name: string; parentId: string | null; }
 
+function buildDeptOptions(depts: Dept[]): { id: string; label: string }[] {
+  const roots = depts.filter((d) => d.parentId === null);
+  const result: { id: string; label: string }[] = [];
+  function walk(d: Dept, depth: number) {
+    result.push({ id: d.id, label: (depth > 0 ? '└ '.repeat(depth) : '') + d.name });
+    depts.filter((c) => c.parentId === d.id).forEach((c) => walk(c, depth + 1));
+  }
+  roots.forEach((r) => walk(r, 0));
+  return result;
+}
+
 const ROLES = [
   { value: 'member', label: '일반 사원' },
   { value: 'leader', label: '부서장' },
@@ -42,7 +53,7 @@ export function UserDetailPage() {
     ]).then(([userRes, deptsRes]) => {
       setUser(userRes.data);
       setForm(userRes.data);
-      setDepts(deptsRes.data.filter((d) => d.parentId !== null));
+      setDepts(deptsRes.data);
     }).catch((err) => {
       console.error('Failed to load user:', err);
       setError('데이터를 불러올 수 없습니다.');
@@ -136,7 +147,7 @@ export function UserDetailPage() {
                 <label>부서</label>
                 <select value={form.departmentId ?? ''} onChange={(e) => set('departmentId', e.target.value)}>
                   <option value="">미지정</option>
-                  {depts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+                  {buildDeptOptions(depts).map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
                 </select>
               </div>
               <div className="detail-field">
