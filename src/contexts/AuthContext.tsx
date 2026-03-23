@@ -42,6 +42,7 @@ interface AuthContextValue {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<LoginResult>;
   challenge: (email: string, newPassword: string, session: string) => Promise<void>;
+  refreshSession: () => Promise<void>;
 }
 
 /* ── Context ── */
@@ -50,6 +51,7 @@ export const AuthContext = createContext<AuthContextValue>({
   isLoading: true,
   login: async () => ({ type: 'success' }),
   challenge: async () => {},
+  refreshSession: async () => {},
 });
 
 /* ── 헬퍼 ── */
@@ -121,6 +123,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { type: 'success' };
   }, []);
 
+  const refreshSession = useCallback(async () => {
+    try {
+      const sess = await fetchMe();
+      setSession(sess);
+    } catch { /* 무시 — 세션 갱신 실패해도 로그아웃하지 않음 */ }
+  }, []);
+
   const challenge = useCallback(async (email: string, newPassword: string, challengeSession: string) => {
     const res = await apiFetch<{ success: boolean; data: ApiLoginData; error?: { message: string } }>(
       '/auth/challenge',
@@ -143,7 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ session, isLoading, login, challenge }}>
+    <AuthContext.Provider value={{ session, isLoading, login, challenge, refreshSession }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
 import { apiFetch, BASE_URL } from '@/services/api';
+import { AuthContext } from '@/contexts/AuthContext';
 import './CompanySettingsPage.css';
 
 interface CompanyData {
@@ -9,6 +10,7 @@ interface CompanyData {
 }
 
 export function CompanySettingsPage() {
+  const { refreshSession } = useContext(AuthContext);
   const [company, setCompany] = useState<CompanyData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -58,6 +60,7 @@ export function CompanySettingsPage() {
       setNameValue(res.data.name);
       setEditingName(false);
       showMessage('success', '회사명이 변경되었습니다.');
+      await refreshSession();
     } catch {
       showMessage('error', '회사명 변경에 실패했습니다.');
     } finally {
@@ -93,6 +96,7 @@ export function CompanySettingsPage() {
       const json = await res.json();
       setCompany(json.data);
       showMessage('success', '로고가 업로드되었습니다.');
+      await refreshSession();
     } catch {
       showMessage('error', '로고 업로드에 실패했습니다.');
     } finally {
