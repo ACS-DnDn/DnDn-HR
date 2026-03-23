@@ -1,0 +1,49 @@
+name: Build HR Image
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.json'
+      - 'tsconfig.app.json'
+      - 'tsconfig.node.json'
+      - 'vite.config.ts'
+      - 'index.html'
+      - 'Dockerfile'
+      - 'nginx.conf'
+      - '.github/workflows/deploy-hr.yml'
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REGISTRY: 387721658341.dkr.ecr.ap-northeast-2.amazonaws.com
+
+jobs:
+  publish-hr:
+    name: Publish HR Image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::387721658341:role/DnDn-PRD-GHA-Deploy-Role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build & Push
+        run: |
+          IMAGE=${{ env.ECR_REGISTRY }}/dndn-prd-hr:${{ github.sha }}
+          docker build -t $IMAGE .
+          docker push $IMAGE
+          echo "HR image: $IMAGE" >> "$GITHUB_STEP_SUMMARY"
