@@ -25,7 +25,6 @@ permissions:
 env:
   AWS_REGION: ap-northeast-2
   ECR_REGISTRY: 387721658341.dkr.ecr.ap-northeast-2.amazonaws.com
-  BASTION_HOST: 13.124.119.204
 
 jobs:
   publish-hr:
@@ -51,24 +50,30 @@ jobs:
           docker push $REPO:latest
           echo "HR image: $REPO:${{ github.sha }}" >> "$GITHUB_STEP_SUMMARY"
 
-  deploy-hr:
-    name: Rollout Restart HR
+  update-gitops:
+    name: Update GitOps manifest
     needs: publish-hr
     runs-on: ubuntu-latest
     steps:
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.BASTION_SSH_KEY }}" > ~/.ssh/bastion.pem
-          chmod 600 ~/.ssh/bastion.pem
-          ssh-keyscan -H ${{ env.BASTION_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+      - name: Checkout Infra repo
+        uses: actions/checkout@v4
+        with:
+          repository: ACS-DnDn/DnDn-Infra
+          token: ${{ secrets.INFRA_REPO_TOKEN }}
+          ref: main
 
-      - name: Rollout restart
+      - name: Update image tag
         run: |
-          ssh -i ~/.ssh/bastion.pem -o StrictHostKeyChecking=no ec2-user@${{ env.BASTION_HOST }} \
-            "kubectl rollout restart deployment/dndn-hr -n dndn-hr"
-          echo "✓ HR deployment restarted"
+          SHA=${{ github.sha }}
+          FILE="gitops/environments/prod/apps/dndn-hr/deployment.yaml"
+          sed -i "s|${{ env.ECR_REGISTRY }}/dndn-prd-hr:.*|${{ env.ECR_REGISTRY }}/dndn-prd-hr:${SHA}|" "$FILE"
+          echo "✓ Updated $FILE → dndn-prd-hr:${SHA}"
 
-      - name: Cleanup
-        if: always()
-        run: rm -f ~/.ssh/bastion.pem
+      - name: Commit & Push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          git commit -m "chore(gitops): update HR image tag from DnDn-HR@${GITHUB_SHA::7}"
+          git push
