@@ -1,6 +1,7 @@
 name: Build HR Image
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
@@ -43,7 +44,8 @@ jobs:
 
       - name: Build & Push
         run: |
-          IMAGE=${{ env.ECR_REGISTRY }}/dndn-prd-hr:${{ github.sha }}
-          docker build -t $IMAGE .
-          docker push $IMAGE
-          echo "HR image: $IMAGE" >> "$GITHUB_STEP_SUMMARY"
+          REPO=${{ env.ECR_REGISTRY }}/dndn-prd-hr
+          docker build -t $REPO:${{ github.sha }} -t $REPO:latest .
+          docker push $REPO:${{ github.sha }}
+          docker push $REPO:latest
+          echo "HR image: $REPO:${{ github.sha }}" >> "$GITHUB_STEP_SUMMARY"
