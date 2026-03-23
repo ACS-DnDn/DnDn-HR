@@ -5,7 +5,17 @@ import './UsersRegisterPage.css';
 
 interface Dept { id: string; name: string; parentId: string | null; }
 
-const POSITIONS = ['사원', '대리', '과장', '차장', '부장', '이사'];
+function buildDeptOptions(depts: Dept[]): { id: string; label: string }[] {
+  const roots = depts.filter((d) => d.parentId === null);
+  const result: { id: string; label: string }[] = [];
+  function walk(d: Dept, depth: number) {
+    result.push({ id: d.id, label: (depth > 0 ? '└ '.repeat(depth) : '') + d.name });
+    depts.filter((c) => c.parentId === d.id).forEach((c) => walk(c, depth + 1));
+  }
+  roots.forEach((r) => walk(r, 0));
+  return result;
+}
+
 const ROLES = [
   { value: 'member', label: '일반 사원' },
   { value: 'leader', label: '부서장' },
@@ -34,7 +44,7 @@ export function UsersRegisterPage() {
 
   useEffect(() => {
     apiFetch<{ success: boolean; data: Dept[] }>('/hr/departments').then((res) => {
-      setDepts(res.data.filter((d) => d.parentId !== null));
+      setDepts(res.data);
     }).catch((err) => {
       console.error('Failed to load departments:', err);
       setErrors({ departmentId: '부서 목록을 불러올 수 없습니다.' });
@@ -51,7 +61,7 @@ export function UsersRegisterPage() {
     if (!form.employeeNo.trim()) e.employeeNo = '사번을 입력하세요.';
     if (!form.name.trim()) e.name = '이름을 입력하세요.';
     if (!form.departmentId) e.departmentId = '부서를 선택하세요.';
-    if (!form.position) e.position = '직급을 선택하세요.';
+    if (!form.position.trim()) e.position = '직급을 입력하세요.';
     if (!form.email.trim()) e.email = '이메일을 입력하세요.';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = '올바른 이메일 형식이 아닙니다.';
     setErrors(e);
@@ -132,20 +142,18 @@ export function UsersRegisterPage() {
                 className={errors.departmentId ? 'input-error' : ''}
               >
                 <option value="">선택</option>
-                {depts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+                {buildDeptOptions(depts).map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
               </select>
               {errors.departmentId && <span className="field-error">{errors.departmentId}</span>}
             </div>
             <div className="form-field">
               <label>직급 <span className="required">*</span></label>
-              <select
+              <input
                 value={form.position}
                 onChange={(e) => set('position', e.target.value)}
+                placeholder="직급 입력"
                 className={errors.position ? 'input-error' : ''}
-              >
-                <option value="">선택</option>
-                {POSITIONS.map((p) => <option key={p} value={p}>{p}</option>)}
-              </select>
+              />
               {errors.position && <span className="field-error">{errors.position}</span>}
             </div>
           </div>

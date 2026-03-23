@@ -27,7 +27,7 @@ export function TopNav() {
       <div className="topnav-right">
         <div className="profile-info">
           <span className="profile-name">{session.name}</span>
-          <span className="profile-role">{ROLE_LABELS[session.role] ?? session.role}</span>
+          <span className="profile-role">{session.position ?? ROLE_LABELS[session.role] ?? session.role}</span>
         </div>
         <div className="divider-v" />
         <span className="company-name">{session.company.name}</span>
