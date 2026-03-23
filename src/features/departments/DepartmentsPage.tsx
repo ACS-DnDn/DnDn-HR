@@ -108,9 +108,14 @@ export function DepartmentsPage() {
 
   const nodes = useMemo(() => {
     const hasRoot = deptNodes.some((n) => n.parentId === null);
-    const mapped = deptNodes.map((n) =>
-      n.parentId === null ? { ...n, name: session.company.name } : n,
-    );
+    let rootRenamed = false;
+    const mapped = deptNodes.map((n) => {
+      if (n.parentId === null && !rootRenamed) {
+        rootRenamed = true;
+        return { ...n, name: session.company.name };
+      }
+      return n;
+    });
     if (!hasRoot) {
       mapped.unshift({
         id: VIRTUAL_ROOT_ID,

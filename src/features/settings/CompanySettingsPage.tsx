@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useSession } from '@/hooks/useSession';
-import { apiFetch } from '@/services/api';
+import { apiFetch, BASE_URL } from '@/services/api';
 import './CompanySettingsPage.css';
 
 interface CompanyData {
@@ -10,11 +9,11 @@ interface CompanyData {
 }
 
 export function CompanySettingsPage() {
-  const session = useSession();
   const [company, setCompany] = useState<CompanyData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const messageTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 회사명 편집
   const [editingName, setEditingName] = useState(false);
@@ -23,6 +22,10 @@ export function CompanySettingsPage() {
 
   // 로고 업로드
   const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    return () => { if (messageTimer.current) clearTimeout(messageTimer.current); };
+  }, []);
 
   useEffect(() => {
     apiFetch<{ success: boolean; data: CompanyData }>('/hr/company')
@@ -35,8 +38,9 @@ export function CompanySettingsPage() {
   }, []);
 
   function showMessage(type: 'success' | 'error', text: string) {
+    if (messageTimer.current) clearTimeout(messageTimer.current);
     setMessage({ type, text });
-    setTimeout(() => setMessage(null), 3000);
+    messageTimer.current = setTimeout(() => setMessage(null), 3000);
   }
 
   async function handleSaveName() {
@@ -80,7 +84,7 @@ export function CompanySettingsPage() {
     setSaving(true);
     try {
       const token = localStorage.getItem('access_token');
-      const res = await fetch('/api/hr/company/logo', {
+      const res = await fetch(`${BASE_URL}/hr/company/logo`, {
         method: 'POST',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,
