@@ -35,6 +35,16 @@ const NAV_ITEMS: { section: string; items: NavItem[] }[] = [
       },
     ],
   },
+  {
+    section: '설정',
+    items: [
+      {
+        label: '회사 설정',
+        href: '/settings',
+        icon: <svg className="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M10 13a3 3 0 100-6 3 3 0 000 6z"/><path d="M16.5 10a6.5 6.5 0 01-.4 2.2l1.6 1.3-1.4 2.4-1.9-.6a6.5 6.5 0 01-1.9 1.1l-.5 2h-2.8l-.5-2a6.5 6.5 0 01-1.9-1.1l-1.9.6-1.4-2.4 1.6-1.3A6.5 6.5 0 013.5 10c0-.8.1-1.5.4-2.2L2.3 6.5l1.4-2.4 1.9.6A6.5 6.5 0 017.5 3.6l.5-2h2.8l.5 2c.7.3 1.3.6 1.9 1.1l1.9-.6 1.4 2.4-1.6 1.3c.3.7.4 1.4.4 2.2z"/></svg>,
+      },
+    ],
+  },
 ];
 
 export function Sidebar() {

@@ -104,10 +104,29 @@ export function DepartmentsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const nodes = useMemo(
-    () => deptNodes.map((n) => n.parentId === null ? { ...n, name: session.company.name } : n),
-    [deptNodes, session.company.name],
-  );
+  const VIRTUAL_ROOT_ID = '__root__';
+
+  const nodes = useMemo(() => {
+    const hasRoot = deptNodes.some((n) => n.parentId === null);
+    let rootRenamed = false;
+    const mapped = deptNodes.map((n) => {
+      if (n.parentId === null && !rootRenamed) {
+        rootRenamed = true;
+        return { ...n, name: session.company.name };
+      }
+      return n;
+    });
+    if (!hasRoot) {
+      mapped.unshift({
+        id: VIRTUAL_ROOT_ID,
+        name: session.company.name,
+        parentId: null,
+        leaderId: null,
+        leaderName: null,
+      });
+    }
+    return mapped;
+  }, [deptNodes, session.company.name]);
 
   const layout   = useMemo(() => buildLayout(nodes), [nodes]);
   const edges    = useMemo(() => layout ? getEdges(layout.root) : [], [layout]);
@@ -149,9 +168,10 @@ export function DepartmentsPage() {
     if (!name || !selected || saving) return;
     setSaving(true);
     try {
+      const parentId = selected === VIRTUAL_ROOT_ID ? null : selected;
       const res = await apiFetch<{ success: boolean; data: DeptNode }>('/hr/departments', {
         method: 'POST',
-        body: JSON.stringify({ name, parentId: selected }),
+        body: JSON.stringify({ name, parentId }),
       });
       setDeptNodes((prev) => [...prev, res.data]);
       setAddingName('');
@@ -198,7 +218,6 @@ export function DepartmentsPage() {
   }
 
   if (loading) return <div className="dept-page"><p style={{ padding: '40px' }}>로딩 중...</p></div>;
-  if (!layout) return null;
 
   const addForm = isAdding ? (
     <div className="detail-add-form">
@@ -231,8 +250,8 @@ export function DepartmentsPage() {
       <div className="dept-main" onClick={handleMainClick}>
         {/* 조직도 */}
         <div className="org-wrap">
-          <div className="org-canvas" style={{ width: layout.svgW, height: layout.svgH }}>
-            <svg className="org-svg" width={layout.svgW} height={layout.svgH}>
+          <div className="org-canvas" style={{ width: layout?.svgW ?? 0, height: layout?.svgH ?? 0 }}>
+            <svg className="org-svg" width={layout?.svgW ?? 0} height={layout?.svgH ?? 0}>
               {edges.map(({ id, path }) => (
                 <path key={id} d={path} className="org-edge" />
               ))}
