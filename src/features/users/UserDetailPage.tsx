@@ -29,7 +29,7 @@ function buildDeptOptions(depts: Dept[]): { id: string; label: string }[] {
 
 const ROLES = [
   { value: 'member', label: '일반 사원' },
-  { value: 'leader', label: '부서장' },
+  { value: 'leader', label: '부서장' },  // 읽기전용 표시용, 부서관리에서만 변경 가능
   { value: 'hr',     label: 'HR 관리자' },
 ];
 
@@ -157,9 +157,13 @@ export function UserDetailPage() {
             </div>
             <div className="detail-field">
               <label>역할</label>
-              <select value={form.role ?? 'member'} onChange={(e) => set('role', e.target.value)}>
-                {ROLES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
-              </select>
+              {user.role === 'leader' ? (
+                <input value="부서장" disabled style={{ opacity: 0.5 }} title="부서관리에서 변경 가능" />
+              ) : (
+                <select value={form.role ?? 'member'} onChange={(e) => set('role', e.target.value)}>
+                  {ROLES.filter((r) => r.value !== 'leader').map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+                </select>
+              )}
             </div>
             <div className="detail-field">
               <label>이메일</label>

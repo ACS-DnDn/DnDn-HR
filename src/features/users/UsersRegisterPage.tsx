@@ -18,7 +18,6 @@ function buildDeptOptions(depts: Dept[]): { id: string; label: string }[] {
 
 const ROLES = [
   { value: 'member', label: '일반 사원' },
-  { value: 'leader', label: '부서장' },
   { value: 'hr',     label: 'HR 관리자' },
 ];
 
