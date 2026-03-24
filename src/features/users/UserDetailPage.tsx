@@ -158,7 +158,10 @@ export function UserDetailPage() {
             <div className="detail-field">
               <label>역할</label>
               {user.role === 'leader' ? (
-                <input value="부서장" disabled style={{ opacity: 0.5 }} title="부서관리에서 변경 가능" />
+                <>
+                  <input value="부서장" disabled style={{ opacity: 0.5 }} aria-describedby="role-help" />
+                  <small id="role-help" className="detail-help">역할은 부서관리에서만 변경할 수 있습니다.</small>
+                </>
               ) : (
                 <select value={form.role ?? 'member'} onChange={(e) => set('role', e.target.value)}>
                   {ROLES.filter((r) => r.value !== 'leader').map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}

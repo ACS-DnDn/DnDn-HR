@@ -126,6 +126,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refreshSession = useCallback(async () => {
     try {
       const sess = await fetchMe();
+      if (sess.role !== 'hr') {
+        clearAuthStorage();
+        setSession(null);
+        return;
+      }
       setSession(sess);
     } catch { /* 무시 — 세션 갱신 실패해도 로그아웃하지 않음 */ }
   }, []);
