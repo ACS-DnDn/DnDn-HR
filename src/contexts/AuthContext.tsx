@@ -92,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!token) { setIsLoading(false); return; }
     fetchMe()
       .then((sess) => {
-        if (sess.role === 'hr') setSession(sess);
+        if (sess.role === 'hr' || sess.role === 'superadmin') setSession(sess);
         else clearAuthStorage();
       })
       .catch(() => clearAuthStorage())
@@ -117,7 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearAuthStorage();
       throw new Error('사용자 정보를 불러올 수 없습니다.');
     }
-    if (sess.role !== 'hr') {
+    if (sess.role !== 'hr' && sess.role !== 'superadmin') {
       clearAuthStorage();
       throw new Error('접근 권한이 없습니다.');
     }
@@ -134,7 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refreshSession = useCallback(async () => {
     try {
       const sess = await fetchMe();
-      if (sess.role !== 'hr') {
+      if (sess.role !== 'hr' && sess.role !== 'superadmin') {
         clearAuthStorage();
         setSession(null);
         return;
@@ -157,7 +157,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearAuthStorage();
       throw new Error('사용자 정보를 불러올 수 없습니다.');
     }
-    if (sess.role !== 'hr') {
+    if (sess.role !== 'hr' && sess.role !== 'superadmin') {
       clearAuthStorage();
       throw new Error('접근 권한이 없습니다.');
     }

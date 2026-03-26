@@ -8,6 +8,8 @@ import { UsersRegisterPage } from '@/features/users/UsersRegisterPage';
 import { UserDetailPage } from '@/features/users/UserDetailPage';
 import { DepartmentsPage } from '@/features/departments/DepartmentsPage';
 import { CompanySettingsPage } from '@/features/settings/CompanySettingsPage';
+import { CompanyRegisterPage } from '@/features/admin/CompanyRegisterPage';
+import { CompanyManagementPage } from '@/features/admin/CompanyManagementPage';
 import { Layout } from '@/components/layout/Layout';
 import '@/styles/global.css';
 
@@ -30,24 +32,36 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
 
   if (isLoading) return null;
   if (timedOut) return <Navigate to="/login" replace />;
-  // 토큰은 있는데 session 상태가 아직 반영 안 된 경우 (challenge 직후 race condition)
   if (!session && localStorage.getItem('access_token')) return null;
   if (!session) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
 
 function AppRoutes() {
+  const { session } = useAuth();
+  const isSuperadmin = session?.role === 'superadmin';
+  const defaultPath = isSuperadmin ? '/admin/companies' : '/users';
+
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route element={<RequireAuth><Layout /></RequireAuth>}>
-        <Route path="/users" element={<UsersPage />} />
-        <Route path="/users/register" element={<UsersRegisterPage />} />
-        <Route path="/users/:id" element={<UserDetailPage />} />
-        <Route path="/departments" element={<DepartmentsPage />} />
-        <Route path="/settings" element={<CompanySettingsPage />} />
+        {isSuperadmin ? (
+          <>
+            <Route path="/admin/register" element={<CompanyRegisterPage />} />
+            <Route path="/admin/companies" element={<CompanyManagementPage />} />
+          </>
+        ) : (
+          <>
+            <Route path="/users" element={<UsersPage />} />
+            <Route path="/users/register" element={<UsersRegisterPage />} />
+            <Route path="/users/:id" element={<UserDetailPage />} />
+            <Route path="/departments" element={<DepartmentsPage />} />
+            <Route path="/settings" element={<CompanySettingsPage />} />
+          </>
+        )}
       </Route>
-      <Route path="*" element={<Navigate to="/users" replace />} />
+      <Route path="*" element={<Navigate to={defaultPath} replace />} />
     </Routes>
   );
 }

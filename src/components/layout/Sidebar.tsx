@@ -13,9 +13,10 @@ const ROLE_LABELS: Record<string, string> = {
   hr: 'HR 관리자',
   leader: '부서장',
   member: '일반 사원',
+  superadmin: '슈퍼어드민',
 };
 
-const NAV_ITEMS: { section: string; items: NavItem[] }[] = [
+const HR_NAV_ITEMS: { section: string; items: NavItem[] }[] = [
   {
     section: '인사관리',
     items: [
@@ -48,12 +49,33 @@ const NAV_ITEMS: { section: string; items: NavItem[] }[] = [
   },
 ];
 
+const ADMIN_NAV_ITEMS: { section: string; items: NavItem[] }[] = [
+  {
+    section: '',
+    items: [
+      {
+        label: '회사 등록',
+        href: '/admin/register',
+        icon: <svg className="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6"><rect x="3" y="6" width="14" height="11" rx="1.5"/><path d="M7 6V4.5A2.5 2.5 0 0112.5 4.5V6"/><path d="M10 10v4M8 12h4"/></svg>,
+      },
+      {
+        label: '회사 관리',
+        href: '/admin/companies',
+        icon: <svg className="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6"><rect x="3" y="3" width="14" height="14" rx="2"/><path d="M7 8h6M7 12h4"/></svg>,
+      },
+    ],
+  },
+];
+
 export function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { isDark, toggle } = useTheme();
   const session = useSession();
   const { logout } = useAuth();
+
+  const isSuperadmin = session.role === 'superadmin';
+  const navItems = isSuperadmin ? ADMIN_NAV_ITEMS : HR_NAV_ITEMS;
 
   const logoSrc = isDark && session.company.logoDarkUrl
     ? session.company.logoDarkUrl
@@ -62,11 +84,13 @@ export function Sidebar() {
   return (
     <aside className="sidebar">
       <nav className="sidebar-nav">
-        {NAV_ITEMS.map((group, gi) => (
+        {navItems.map((group, gi) => (
           <div key={gi}>
-            <span className="nav-section-label" style={gi > 0 ? { marginTop: 8 } : undefined}>
-              {group.section}
-            </span>
+            {group.section && (
+              <span className="nav-section-label" style={gi > 0 ? { marginTop: 8 } : undefined}>
+                {group.section}
+              </span>
+            )}
             {group.items.map((item) => {
               const isActive = location.pathname === item.href;
               return (
@@ -95,10 +119,10 @@ export function Sidebar() {
           로그아웃
         </button>
         <div className="nav-item" style={{ gap: 10, cursor: 'default', pointerEvents: 'none' }}>
-          {logoSrc && <img className="sidebar-company-logo" src={logoSrc} alt="" />}
+          {!isSuperadmin && logoSrc && <img className="sidebar-company-logo" src={logoSrc} alt="" />}
           <div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{session.name}</div>
-            <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>{session.position ?? ROLE_LABELS[session.role] ?? session.role}</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{isSuperadmin ? 'DnDn Admin' : session.name}</div>
+            {!isSuperadmin && <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>{session.position ?? ROLE_LABELS[session.role] ?? session.role}</div>}
           </div>
           <button
             className="sidebar-toggle"
