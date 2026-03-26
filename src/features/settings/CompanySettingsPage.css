@@ -187,3 +187,10 @@
   from { opacity: 0; transform: translateY(-8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* ── 모바일 ── */
+@media (max-width: 768px) {
+  .settings-page { padding: 20px 16px; }
+  .settings-card { padding: 20px 16px; }
+  .settings-logo-box { width: 96px; height: 96px; }
+}

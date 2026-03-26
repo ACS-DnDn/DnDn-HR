@@ -167,3 +167,10 @@
 }
 .btn-primary-sm:hover { opacity: 0.88; }
 .btn-primary-sm:disabled { opacity: 0.35; cursor: default; }
+
+/* ── 모바일 ── */
+@media (max-width: 768px) {
+  .register-inner { padding: 20px 16px; }
+  .register-title { font-size: 22px; }
+  .form-row { grid-template-columns: 1fr; }
+}

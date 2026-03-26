@@ -415,3 +415,20 @@
   box-shadow: 0 0 0 2px var(--mint-soft);
 }
 .form-group select { cursor: pointer; appearance: auto; }
+
+/* ── 모바일 ── */
+@media (max-width: 768px) {
+  .users-layout { flex-direction: column; }
+  .dept-tree { width: 100%; border-right: none; border-bottom: 1px solid var(--border); }
+  .users-main { flex: 1 0 auto; padding-left: 0; padding-top: 16px; }
+  .toolbar { flex-wrap: wrap; }
+  .search-wrap { width: 100%; }
+  .users-table { table-layout: auto; }
+  .users-table col.col-email, .users-table col.col-phone { width: 0; }
+  .users-table th:nth-child(5), .users-table td:nth-child(5),
+  .users-table th:nth-child(6), .users-table td:nth-child(6) { display: none; }
+  .users-table td { padding: 9px 8px; font-size: 12.5px; }
+  .users-table thead th { padding: 8px; font-size: 10.5px; }
+  .form-row { grid-template-columns: 1fr; }
+  .modal { max-width: calc(100% - 32px); }
+}

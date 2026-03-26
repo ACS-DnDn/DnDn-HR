@@ -67,7 +67,7 @@ const ADMIN_NAV_ITEMS: { section: string; items: NavItem[] }[] = [
   },
 ];
 
-export function Sidebar() {
+export function Sidebar({ open, onNavigate }: { open?: boolean; onNavigate?: () => void }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { isDark, toggle } = useTheme();
@@ -82,7 +82,7 @@ export function Sidebar() {
     : session.company.logoUrl;
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar${open ? ' sidebar--open' : ''}`}>
       <nav className="sidebar-nav">
         {navItems.map((group, gi) => (
           <div key={gi}>
@@ -98,7 +98,7 @@ export function Sidebar() {
                   key={item.href}
                   className={`nav-item${isActive ? ' active' : ''}`}
                   href={item.href}
-                  onClick={(e) => { e.preventDefault(); navigate(item.href); }}
+                  onClick={(e) => { e.preventDefault(); navigate(item.href); onNavigate?.(); }}
                 >
                   {item.icon}
                   {item.label}
