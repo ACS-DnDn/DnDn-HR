@@ -131,10 +131,6 @@ export function CompanyManagementPage() {
                           <span className="expand-detail-value">{c.hrEmail ?? '-'}</span>
                         </div>
                         <div className="expand-detail-row">
-                          <span className="expand-detail-label">가입일</span>
-                          <span className="expand-detail-value">{formatDate(c.createdAt)}</span>
-                        </div>
-                        <div className="expand-detail-row">
                           <button className="btn-danger-sm" onClick={(e) => { e.stopPropagation(); setDeleteTarget(c); }}>삭제</button>
                         </div>
                       </div>
