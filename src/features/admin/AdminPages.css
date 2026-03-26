@@ -277,14 +277,8 @@
   height: 32px;
   border-radius: 4px;
   object-fit: contain;
-  border: 1px solid var(--border);
 }
 .logo-placeholder {
-  display: inline-block;
-  width: 32px;
-  height: 32px;
-  line-height: 32px;
-  text-align: center;
   color: var(--text-muted);
   font-size: 12px;
 }
