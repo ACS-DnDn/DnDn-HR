@@ -140,8 +140,10 @@
   .main-inner { padding: 16px 14px; }
   .topnav { padding: 0 12px; gap: 8px; }
   .nav-title { font-size: 13px; margin-left: 0; }
-  .profile-info { display: none; }
+  .profile-info { flex-direction: row; gap: 4px; align-items: center; }
+  .profile-name { font-size: 12px; }
+  .profile-role { display: none; }
   .divider-v { display: none; }
-  .company-name { font-size: 12px; }
+  .company-name { display: none; }
   .company-logo { height: 22px; }
 }

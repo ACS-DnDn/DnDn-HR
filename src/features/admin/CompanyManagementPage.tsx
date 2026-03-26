@@ -18,6 +18,7 @@ export function CompanyManagementPage() {
   const [search, setSearch] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<Company | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   async function load() {
     try {
@@ -105,7 +106,7 @@ export function CompanyManagementPage() {
             ) : filtered.length === 0 ? (
               <tr><td colSpan={6} className="empty-row">등록된 회사가 없습니다.</td></tr>
             ) : filtered.map((c) => (
-              <tr key={c.id}>
+              <tr key={c.id} className="tr-expandable" onClick={() => setExpandedId((prev) => prev === c.id ? null : c.id)}>
                 <td className="td-id">{c.id}</td>
                 <td>
                   {c.logoUrl
@@ -117,9 +118,28 @@ export function CompanyManagementPage() {
                 <td className="td-email">{c.hrEmail ?? '-'}</td>
                 <td className="td-meta">{formatDate(c.createdAt)}</td>
                 <td>
-                  <button className="btn-danger-sm" onClick={() => setDeleteTarget(c)}>삭제</button>
+                  <button className="btn-danger-sm" onClick={(e) => { e.stopPropagation(); setDeleteTarget(c); }}>삭제</button>
                 </td>
               </tr>
+              {expandedId === c.id && (
+                <tr key={`${c.id}-detail`} className="tr-expand-detail">
+                  <td colSpan={6}>
+                    <div className="expand-detail-content">
+                      <div className="expand-detail-row">
+                        <span className="expand-detail-label">HR 이메일</span>
+                        <span className="expand-detail-value">{c.hrEmail ?? '-'}</span>
+                      </div>
+                      <div className="expand-detail-row">
+                        <span className="expand-detail-label">가입일</span>
+                        <span className="expand-detail-value">{formatDate(c.createdAt)}</span>
+                      </div>
+                      <div className="expand-detail-row">
+                        <button className="btn-danger-sm" onClick={(e) => { e.stopPropagation(); setDeleteTarget(c); }}>삭제</button>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              )}
             ))}
           </tbody>
         </table>
