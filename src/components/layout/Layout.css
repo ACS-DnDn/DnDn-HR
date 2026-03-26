@@ -40,6 +40,18 @@
 .company-name { font-size: 13.5px; font-weight: 700; color: var(--text); white-space: nowrap; }
 .sidebar-company-logo { width: 30px; height: 30px; border-radius: 6px; object-fit: contain; flex-shrink: 0; }
 
+/* ── 햄버거 버튼 (모바일 only) ── */
+.hamburger-btn {
+  display: none;
+  background: none; border: none; cursor: pointer;
+  color: var(--text); padding: 4px; flex-shrink: 0;
+}
+
+/* ── 사이드바 백드롭 (모바일 only) ── */
+.sidebar-backdrop {
+  display: none;
+}
+
 .sidebar-toggle { background: none; border: none; cursor: pointer; padding: 0; pointer-events: all; }
 .sidebar-toggle .toggle-track {
   width: 36px; height: 20px; background: var(--mint); border-radius: 10px;
@@ -104,3 +116,32 @@
 /* ── 메인 영역 ── */
 .main { padding-top: var(--nav-h); margin-left: var(--sidebar-w); min-height: 100vh; }
 .main-inner { min-width: 0; width: 100%; max-width: 1100px; margin: 0 auto; padding: 28px 24px; }
+
+/* ── 모바일 ── */
+@media (max-width: 768px) {
+  .hamburger-btn { display: flex; align-items: center; }
+
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.25s cubic-bezier(0.22,1,0.36,1);
+  }
+  .sidebar.sidebar--open {
+    transform: translateX(0);
+  }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 199;
+  }
+
+  .main { margin-left: 0; }
+  .main-inner { padding: 16px 14px; }
+  .topnav { padding: 0 12px; gap: 8px; }
+  .nav-title { font-size: 13px; margin-left: 0; }
+  .profile-info { display: none; }
+  .divider-v { display: none; }
+  .company-name { font-size: 12px; }
+  .company-logo { height: 22px; }
+}

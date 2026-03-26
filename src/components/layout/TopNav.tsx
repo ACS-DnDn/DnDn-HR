@@ -10,7 +10,7 @@ const ROLE_LABELS: Record<string, string> = {
   superadmin: '슈퍼어드민',
 };
 
-export function TopNav() {
+export function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
   const navigate = useNavigate();
   const { isDark } = useTheme();
   const session = useSession();
@@ -24,6 +24,11 @@ export function TopNav() {
 
   return (
     <header className="topnav">
+      <button className="hamburger-btn" onClick={onMenuClick} aria-label="메뉴">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+          <path d="M3 5h14M3 10h14M3 15h14"/>
+        </svg>
+      </button>
       <a className="nav-logo-link" href={homePath} onClick={(e) => { e.preventDefault(); navigate(homePath); }}>
         <AnimatedLogo variant={isDark ? 'dark' : 'light'} className="nav-logo-obj" />
       </a>

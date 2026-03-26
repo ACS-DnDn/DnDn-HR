@@ -321,3 +321,12 @@
   cursor: pointer;
 }
 .btn-danger:hover { opacity: 0.88; }
+
+/* ── 모바일 ── */
+@media (max-width: 768px) {
+  .detail-inner { padding: 20px 16px; }
+  .detail-name { font-size: 22px; }
+  .detail-field-row { grid-template-columns: 1fr; }
+  .detail-heading { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .modal { max-width: calc(100% - 32px); }
+}
