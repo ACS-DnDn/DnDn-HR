@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '@/hooks/useTheme';
 import { useSession } from '@/hooks/useSession';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface NavItem {
   label: string;
@@ -52,6 +53,7 @@ export function Sidebar() {
   const navigate = useNavigate();
   const { isDark, toggle } = useTheme();
   const session = useSession();
+  const { logout } = useAuth();
 
   const logoSrc = isDark && session.company.logoDarkUrl
     ? session.company.logoDarkUrl
@@ -84,6 +86,14 @@ export function Sidebar() {
       </nav>
 
       <div className="sidebar-bottom">
+        <button className="sidebar-logout" onClick={logout}>
+          <svg className="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
+            <path d="M7 17H4a1 1 0 01-1-1V4a1 1 0 011-1h3" />
+            <path d="M14 14l3-4-3-4" />
+            <path d="M17 10H8" />
+          </svg>
+          로그아웃
+        </button>
         <div className="nav-item" style={{ gap: 10, cursor: 'default', pointerEvents: 'none' }}>
           {logoSrc && <img className="sidebar-company-logo" src={logoSrc} alt="" />}
           <div>

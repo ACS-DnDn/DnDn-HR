@@ -41,6 +41,7 @@ interface AuthContextValue {
   session: Session | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<LoginResult>;
+  logout: () => void;
   challenge: (email: string, newPassword: string, session: string) => Promise<void>;
   refreshSession: () => Promise<void>;
 }
@@ -50,6 +51,7 @@ export const AuthContext = createContext<AuthContextValue>({
   session: null,
   isLoading: true,
   login: async () => ({ type: 'success' }),
+  logout: () => {},
   challenge: async () => {},
   refreshSession: async () => {},
 });
@@ -123,6 +125,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { type: 'success' };
   }, []);
 
+  const logout = useCallback(() => {
+    try { apiFetch('/auth/logout', { method: 'POST' }); } catch { /* ignore */ }
+    clearAuthStorage();
+    setSession(null);
+  }, []);
+
   const refreshSession = useCallback(async () => {
     try {
       const sess = await fetchMe();
@@ -157,7 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ session, isLoading, login, challenge, refreshSession }}>
+    <AuthContext.Provider value={{ session, isLoading, login, logout, challenge, refreshSession }}>
       {children}
     </AuthContext.Provider>
   );
