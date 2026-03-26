@@ -126,7 +126,7 @@ export function CompanyManagementPage() {
                   <tr className="tr-expand-detail">
                     <td></td>
                     <td></td>
-                    <td className="expand-email"><span className="expand-detail-label">HR</span> {c.hrEmail ?? '-'}</td>
+                    <td></td>
                     <td></td>
                     <td><button className="btn-danger-sm" onClick={(e) => { e.stopPropagation(); setDeleteTarget(c); }}>삭제</button></td>
                     <td></td>

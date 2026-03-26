@@ -374,18 +374,6 @@
 /* ── 확장 행 (모바일용 아코디언) ── */
 .tr-expand-detail { display: none; }
 
-.expand-detail-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-muted);
-  margin-right: 4px;
-}
-.expand-email {
-  font-size: 12.5px;
-  color: var(--text-sub);
-  text-align: left;
-}
-
 /* ── 모바일 ── */
 @media (max-width: 768px) {
   .register-inner { padding: 20px 16px; }
@@ -393,13 +381,12 @@
   .toolbar { flex-wrap: wrap; }
   .search-wrap { width: 100%; }
   .companies-table { table-layout: fixed; }
-  .companies-table col.col-id     { width: 12%; }
-  .companies-table col.col-logo   { width: 16%; }
-  .companies-table col.col-name   { width: 42%; }
-  .companies-table col.col-hr     { width: 0; }
-  .companies-table col.col-date   { width: 30%; }
+  .companies-table col.col-id     { width: 8%; }
+  .companies-table col.col-logo   { width: 12%; }
+  .companies-table col.col-name   { width: 24%; }
+  .companies-table col.col-hr     { width: 32%; }
+  .companies-table col.col-date   { width: 24%; }
   .companies-table col.col-action { width: 0; }
-  .companies-table th:nth-child(4), .companies-table td:nth-child(4),
   .companies-table th:nth-child(6), .companies-table td:nth-child(6) { display: none; }
   .companies-table td { padding: 9px 8px; font-size: 12.5px; }
   .companies-table thead th { padding: 8px; font-size: 10.5px; }
