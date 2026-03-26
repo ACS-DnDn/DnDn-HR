@@ -124,17 +124,12 @@ export function CompanyManagementPage() {
                 </tr>
                 {expandedId === c.id && (
                   <tr className="tr-expand-detail">
-                    <td colSpan={6}>
-                      <div className="expand-detail-content">
-                        <div className="expand-detail-row">
-                          <span className="expand-detail-label">HR 이메일</span>
-                          <span className="expand-detail-value">{c.hrEmail ?? '-'}</span>
-                        </div>
-                        <div className="expand-detail-row">
-                          <button className="btn-danger-sm" onClick={(e) => { e.stopPropagation(); setDeleteTarget(c); }}>삭제</button>
-                        </div>
-                      </div>
-                    </td>
+                    <td></td>
+                    <td></td>
+                    <td className="expand-email"><span className="expand-detail-label">HR</span> {c.hrEmail ?? '-'}</td>
+                    <td></td>
+                    <td><button className="btn-danger-sm" onClick={(e) => { e.stopPropagation(); setDeleteTarget(c); }}>삭제</button></td>
+                    <td></td>
                   </tr>
                 )}
               </React.Fragment>
