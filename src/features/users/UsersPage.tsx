@@ -63,12 +63,19 @@ export function UsersPage() {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return users.filter((u) => {
+    const result = users.filter((u) => {
       const matchSearch = !q || u.name.toLowerCase().includes(q);
       const matchDept =
         !filterDeptId ||
         getDescendantIds(filterDeptId, depts).includes(u.departmentId ?? '');
       return matchSearch && matchDept;
+    });
+    return result.sort((a, b) => {
+      const deptCmp = (a.departmentName ?? '').localeCompare(b.departmentName ?? '', 'ko');
+      if (deptCmp !== 0) return deptCmp;
+      if (a.role === 'leader' && b.role !== 'leader') return -1;
+      if (a.role !== 'leader' && b.role === 'leader') return 1;
+      return a.name.localeCompare(b.name, 'ko');
     });
   }, [users, search, filterDeptId, depts]);
 
@@ -89,9 +96,8 @@ export function UsersPage() {
     return children.map((dept) => {
       const hasKids = depts.some((d) => d.parentId === dept.id);
       const isOpen = expanded.has(dept.id);
-      const count = getDescendantIds(dept.id, depts).filter((id) =>
-        users.some((u) => u.departmentId === id),
-      ).length;
+      const descIds = new Set(getDescendantIds(dept.id, depts));
+      const count = users.filter((u) => descIds.has(u.departmentId ?? '')).length;
       return (
         <div key={dept.id} className="tree-group">
           <button
