@@ -36,7 +36,10 @@ function buildLayout(nodes: DeptNode[]): { root: LayoutNode; svgW: number; svgH:
   if (!rootData) return null;
 
   function build(n: DeptNode): LayoutNode {
-    return { ...n, children: nodes.filter((c) => c.parentId === n.id).map(build), x: 0, y: 0 };
+    const children = nodes.filter((c) => c.parentId === n.id)
+      .sort((a, b) => a.name.localeCompare(b.name, 'ko'))
+      .map(build);
+    return { ...n, children, x: 0, y: 0 };
   }
   const root = build(rootData);
 
@@ -91,6 +94,8 @@ export function DepartmentsPage() {
   const [addingName, setAddingName] = useState('');
   const [isEditingLeader, setIsEditingLeader] = useState(false);
   const [pendingLeader, setPendingLeader] = useState('');
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [pendingName, setPendingName] = useState('');
   const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -147,7 +152,31 @@ export function DepartmentsPage() {
     setIsAdding(false);
     setAddingName('');
     setIsEditingLeader(false);
+    setIsEditingName(false);
     setActionError(null);
+  }
+
+  async function handleRenameDept() {
+    const name = pendingName.trim();
+    if (!name || !selected || saving) return;
+    setSaving(true);
+    try {
+      const res = await apiFetch<{ success: boolean; data: DeptNode }>(
+        `/hr/departments/${selected}/name`,
+        { method: 'PATCH', body: JSON.stringify({ name }) },
+      );
+      setDeptNodes((prev) => prev.map((n) => n.id === selected ? res.data : n));
+      setIsEditingName(false);
+    } catch (err: any) {
+      const detail = err?.detail || '';
+      if (detail === 'ROOT_DEPT_USE_COMPANY_SETTINGS') {
+        setActionError('루트 부서명은 회사 설정에서 변경하세요.');
+      } else {
+        setActionError('부서명 변경에 실패했습니다.');
+      }
+    } finally {
+      setSaving(false);
+    }
   }
 
   function selectNode(id: string) {
@@ -279,8 +308,37 @@ export function DepartmentsPage() {
           {selectedNode && (
             <>
               <div className="dept-detail-header">
-                <div className="dept-detail-name">{selectedNode.name}</div>
-                {selectedNode.parentId !== null && !hasChildren(selectedNode.id) && (
+                {isEditingName ? (
+                  <div className="detail-add-form" style={{ flex: 1 }}>
+                    <input
+                      className="detail-add-input"
+                      value={pendingName}
+                      onChange={(e) => setPendingName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleRenameDept();
+                        if (e.key === 'Escape') setIsEditingName(false);
+                      }}
+                      autoFocus
+                    />
+                    <div className="detail-add-btns">
+                      <button className="detail-add-confirm" onClick={handleRenameDept} disabled={saving}>저장</button>
+                      <button className="detail-add-cancel" onClick={() => setIsEditingName(false)}>취소</button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="dept-detail-name">{selectedNode.name}</div>
+                    {selectedNode.parentId !== null && (
+                      <button
+                        className="detail-edit-btn"
+                        onClick={() => { setPendingName(selectedNode.name); setIsEditingName(true); }}
+                      >
+                        수정
+                      </button>
+                    )}
+                  </>
+                )}
+                {selectedNode.parentId !== null && !hasChildren(selectedNode.id) && !isEditingName && (
                   <button
                     className="dept-action-delete"
                     onClick={() => handleDeleteDept(selectedNode.id)}

@@ -19,11 +19,12 @@ interface Dept { id: string; name: string; parentId: string | null; }
 function buildDeptOptions(depts: Dept[]): { id: string; label: string }[] {
   const roots = depts.filter((d) => d.parentId === null);
   const result: { id: string; label: string }[] = [];
+  const sorted = (list: Dept[]) => [...list].sort((a, b) => a.name.localeCompare(b.name, 'ko'));
   function walk(d: Dept, depth: number) {
     result.push({ id: d.id, label: (depth > 0 ? '└ '.repeat(depth) : '') + d.name });
-    depts.filter((c) => c.parentId === d.id).forEach((c) => walk(c, depth + 1));
+    sorted(depts.filter((c) => c.parentId === d.id)).forEach((c) => walk(c, depth + 1));
   }
-  roots.forEach((r) => walk(r, 0));
+  sorted(roots).forEach((r) => walk(r, 0));
   return result;
 }
 

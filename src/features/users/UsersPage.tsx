@@ -84,7 +84,8 @@ export function UsersPage() {
     });
 
   function renderTree(parentId: string | null, depth: number): React.ReactNode {
-    const children = parentId === null ? topDepts : depts.filter((d) => d.parentId === parentId);
+    const children = (parentId === null ? topDepts : depts.filter((d) => d.parentId === parentId))
+      .sort((a, b) => a.name.localeCompare(b.name, 'ko'));
     return children.map((dept) => {
       const hasKids = depts.some((d) => d.parentId === dept.id);
       const isOpen = expanded.has(dept.id);
