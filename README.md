@@ -124,8 +124,8 @@ npm run lint
 
 `src/App.tsx` 기준으로 보면 앱은 아래 레이어로 나뉩니다.
 
-- `AuthProvider`
 - `ThemeProvider`
+- `AuthProvider`
 - `Layout`
 - role 기반 라우팅
 - feature 단위 페이지 구성
